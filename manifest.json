@@ -1,8 +1,9 @@
 {
   "name": "Personal OS",
   "short_name": "P.OS",
-  "description": "Personal dashboard — agenda, nutrition, training, finance & assistant",
-  "start_url": "/dashboard-v1-dark.html",
+  "description": "Personal dashboard",
+  "start_url": "/personal-os/dashboard-v1-dark.html",
+  "scope": "/personal-os/",
   "display": "standalone",
   "background_color": "#0a0a0f",
   "theme_color": "#0a0a0f",
