@@ -1,0 +1,3240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0a0a0f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="P.OS">
+<link rel="manifest" href="manifest.json">
+<title>Personal OS</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --surface2: #1a1a24;
+    --border: #252535;
+    --accent: #7c6fcd;
+    --accent2: #e8c547;
+    --accent3: #4ecdc4;
+    --accent4: #ff6b6b;
+    --text: #e8e8f0;
+    --text2: #888899;
+    --text3: #555566;
+    --green: #4ade80;
+    --red: #f87171;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    min-height: 100vh;
+    display: flex;
+    overflow-x: hidden;
+  }
+
+  /* SIDEBAR */
+  .sidebar {
+    width: 200px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 0;
+    gap: 6px;
+    position: fixed;
+    height: 100vh;
+    z-index: 100;
+  }
+
+  .logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 18px;
+    color: var(--accent);
+    margin-bottom: 24px;
+    letter-spacing: -1px;
+    width: 100%;
+    padding: 0 20px;
+    white-space: nowrap;
+  }
+
+  .logo span { color: var(--accent2); }
+
+  .nav-item {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: var(--text3);
+    border-left: 2px solid transparent;
+    font-size: 13px;
+    white-space: nowrap;
+  }
+
+  .nav-item:hover { color: var(--text); background: var(--surface2); }
+  .nav-item.active { color: var(--accent); border-left-color: var(--accent); background: rgba(124,111,205,0.08); }
+
+  .nav-icon { font-size: 18px; flex-shrink: 0; width: 20px; text-align: center; }
+  .nav-label { font-family: 'Syne', sans-serif; font-weight: 600; font-size: 12px; letter-spacing: 0.5px; text-transform: uppercase; }
+
+  /* MAIN */
+  .main {
+    margin-left: 200px;
+    flex: 1;
+    padding: 32px;
+    min-height: 100vh;
+  }
+
+  .tab { display: none; }
+  .tab.active { display: block; animation: fadeIn 0.3s ease; }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* PAGE HEADER */
+  .page-header {
+    margin-bottom: 32px;
+  }
+
+  .page-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 32px;
+    letter-spacing: -1px;
+    line-height: 1;
+  }
+
+  .page-sub {
+    color: var(--text2);
+    font-size: 12px;
+    margin-top: 6px;
+    letter-spacing: 0.5px;
+  }
+
+  /* GRID */
+  .grid { display: grid; gap: 16px; }
+  .grid-2 { grid-template-columns: 1fr 1fr; }
+  .grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+  .grid-4 { grid-template-columns: repeat(4, 1fr); }
+
+  /* CARD */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+  }
+
+  .card-label {
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text3);
+    margin-bottom: 8px;
+  }
+
+  .card-value {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 28px;
+    letter-spacing: -1px;
+  }
+
+  .card-sub {
+    font-size: 11px;
+    color: var(--text2);
+    margin-top: 4px;
+  }
+
+  .card-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    margin-bottom: 16px;
+    color: var(--text);
+  }
+
+  /* SECTION DIVIDERS */
+  .section-gap { margin-top: 24px; }
+
+  /* INPUTS */
+  input, select, textarea {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    padding: 10px 14px;
+    outline: none;
+    transition: border-color 0.2s;
+    width: 100%;
+  }
+
+  input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+  input::placeholder { color: var(--text3); }
+
+  select option { background: var(--surface2); }
+
+  /* BUTTONS */
+  .btn {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn:hover { opacity: 0.85; transform: translateY(-1px); }
+  .btn-sm { padding: 7px 14px; font-size: 11px; }
+  .btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--text2); }
+  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-danger { background: var(--red); }
+  .btn-green { background: var(--green); color: #000; }
+
+  .btn-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+
+  /* BADGES */
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  .badge-green { background: rgba(74,222,128,0.15); color: var(--green); }
+  .badge-red { background: rgba(248,113,113,0.15); color: var(--red); }
+  .badge-yellow { background: rgba(232,197,71,0.15); color: var(--accent2); }
+  .badge-purple { background: rgba(124,111,205,0.15); color: var(--accent); }
+  .badge-teal { background: rgba(78,205,196,0.15); color: var(--accent3); }
+
+  /* PROGRESS BAR */
+  .progress-track {
+    background: var(--surface2);
+    border-radius: 4px;
+    height: 6px;
+    overflow: hidden;
+    margin-top: 8px;
+  }
+
+  .progress-fill {
+    height: 100%;
+    border-radius: 4px;
+    background: var(--accent);
+    transition: width 0.4s ease;
+  }
+
+  /* TAG */
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 5px 10px;
+    font-size: 12px;
+  }
+
+  .tag-remove { cursor: pointer; color: var(--text3); font-size: 14px; line-height: 1; }
+  .tag-remove:hover { color: var(--red); }
+
+  /* LIST ITEMS */
+  .list-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .list-item:last-child { border-bottom: none; }
+
+  /* DIVIDER */
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 16px 0;
+  }
+
+  /* ===========================
+     HOME TAB
+  =========================== */
+  .home-date {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    color: var(--accent2);
+    margin-bottom: 4px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  /* ===========================
+     HABIT TRACKER
+  =========================== */
+  .habit-tracker-wrap { overflow-x: auto; }
+
+  .tracker-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 520px;
+  }
+
+  .tracker-table th {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text3);
+    padding: 6px 10px;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .tracker-table th.habit-col { text-align: left; }
+
+  .tracker-table td {
+    padding: 10px 10px;
+    border-bottom: 1px solid var(--border);
+    text-align: center;
+    vertical-align: middle;
+  }
+
+  .tracker-table td.habit-col { text-align: left; }
+  .tracker-table tr:last-child td { border-bottom: none; }
+  .tracker-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+  .habit-label { font-size: 13px; font-weight: 500; color: var(--text); }
+  .habit-streak { font-size: 11px; color: var(--accent2); margin-top: 2px; }
+
+  .day-dot {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+    margin: 0 auto;
+    background: transparent;
+    color: var(--text3);
+  }
+
+  .day-dot:hover:not(.future) { border-color: var(--accent); }
+  .day-dot.done { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .day-dot.missed { background: rgba(248,113,113,0.1); border-color: rgba(248,113,113,0.3); color: var(--red); }
+  .day-dot.future { border-color: var(--border); color: var(--text3); opacity: 0.3; cursor: default; }
+  .day-dot.today-dot { border-color: var(--accent2); }
+
+  .pct-badge {
+    display: inline-block;
+    padding: 3px 9px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 700;
+    font-family: 'Syne', sans-serif;
+  }
+
+  .pct-badge.high { background: rgba(74,222,128,0.15); color: var(--green); }
+  .pct-badge.mid  { background: rgba(232,197,71,0.15); color: var(--accent2); }
+  .pct-badge.low  { background: rgba(248,113,113,0.15); color: var(--red); }
+
+  .week-nav {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .week-nav-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text2);
+    padding: 4px 10px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .week-nav-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .week-label { font-size: 12px; color: var(--text2); }
+
+  /* ===========================
+     ADD PANEL
+  =========================== */
+  .color-dot {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.15s;
+    flex-shrink: 0;
+  }
+  .color-dot:hover { transform: scale(1.15); }
+  .color-dot.active-color { border-color: var(--text); transform: scale(1.15); }
+
+  .habit-chip-pick {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 12px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text2);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .habit-chip-pick:hover { border-color: var(--accent); color: var(--text); }
+  .habit-chip-pick.selected { border-color: var(--accent); background: rgba(124,111,205,0.15); color: var(--accent); }
+
+  .habit-manage-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 12px;
+    color: var(--text2);
+  }
+  .habit-manage-row:last-child { border-bottom: none; }
+
+  /* ===========================
+     SHIFT BUTTONS
+  =========================== */
+  .shift-bar {
+    display: flex;
+    gap: 6px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+  }
+
+  .shift-btn {
+    padding: 7px 16px;
+    border-radius: 8px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text2);
+    transition: all 0.15s;
+  }
+
+  .shift-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .shift-btn.active-early   { background: rgba(232,197,71,0.15); border-color: #e8c547; color: #e8c547; }
+  .shift-btn.active-evening { background: rgba(124,111,205,0.15); border-color: #7c6fcd; color: #7c6fcd; }
+  .shift-btn.active-free    { background: rgba(74,222,128,0.12); border-color: #4ade80; color: #4ade80; }
+
+  /* ===========================
+     TASKS
+  =========================== */
+  .task-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+
+  .task-item:last-child { border-bottom: none; }
+
+  .task-check {
+    width: 18px; height: 18px;
+    border-radius: 4px;
+    border: 2px solid var(--border);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.15s;
+    font-size: 11px;
+  }
+
+  .task-check.checked { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .task-text { flex: 1; }
+  .task-text.done-text { text-decoration: line-through; color: var(--text3); }
+  .task-origin { font-size: 10px; color: var(--text3); margin-left: 4px; }
+
+
+  .tx-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+
+  .tx-row:last-child { border-bottom: none; }
+  .tx-label { color: var(--text2); }
+  .tx-amount { font-family: 'Syne', sans-serif; font-weight: 700; }
+  .tx-amount.income { color: var(--green); }
+  .tx-amount.expense { color: var(--red); }
+
+  /* ===========================
+     NUTRITION TAB
+  =========================== */
+  .macro-bars { margin-top: 12px; display: flex; flex-direction: column; gap: 10px; }
+
+  .macro-row { display: flex; align-items: center; gap: 10px; font-size: 12px; }
+  .macro-label { width: 80px; color: var(--text2); }
+  .macro-track { flex: 1; background: var(--surface2); border-radius: 4px; height: 8px; overflow: hidden; }
+  .macro-fill { height: 100%; border-radius: 4px; transition: width 0.4s; }
+  .macro-val { width: 70px; text-align: right; color: var(--text2); }
+
+  .food-log-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    background: var(--surface2);
+    border-radius: 8px;
+    margin-bottom: 6px;
+    font-size: 13px;
+  }
+
+  /* ===========================
+     TRAINING TAB
+  =========================== */
+  .workout-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 10px;
+  }
+
+  .workout-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+
+  .exercise-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr auto;
+    gap: 8px;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+
+  .exercise-row:last-child { border-bottom: none; }
+  .exercise-row .col-label { font-size: 10px; color: var(--text3); letter-spacing: 1px; text-transform: uppercase; }
+
+  .set-pill {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 4px 8px;
+    font-size: 12px;
+    text-align: center;
+  }
+
+  .muscle-tag {
+    display: inline-block;
+    background: rgba(124,111,205,0.12);
+    color: var(--accent);
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-size: 10px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-right: 4px;
+  }
+
+  /* ===========================
+     ASSISTANT TAB
+  =========================== */
+  .chat-window {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    height: 440px;
+    overflow-y: auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    scroll-behavior: smooth;
+  }
+
+  .chat-window::-webkit-scrollbar { width: 4px; }
+  .chat-window::-webkit-scrollbar-track { background: transparent; }
+  .chat-window::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .msg {
+    display: flex;
+    gap: 10px;
+    max-width: 80%;
+  }
+
+  .msg.user { align-self: flex-end; flex-direction: row-reverse; }
+
+  .msg-avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+  }
+
+  .msg.user .msg-avatar { background: rgba(124,111,205,0.2); border-color: var(--accent); }
+
+  .msg-bubble {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 10px 14px;
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--text);
+  }
+
+  .msg.user .msg-bubble { background: rgba(124,111,205,0.12); border-color: rgba(124,111,205,0.3); }
+
+  .chat-input-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 12px;
+  }
+
+  .typing-indicator {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 12px 14px;
+  }
+
+  .dot {
+    width: 6px; height: 6px;
+    background: var(--text3);
+    border-radius: 50%;
+    animation: bounce 1.2s ease-in-out infinite;
+  }
+
+  .dot:nth-child(2) { animation-delay: 0.2s; }
+  .dot:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes bounce {
+    0%, 80%, 100% { transform: translateY(0); }
+    40% { transform: translateY(-6px); }
+  }
+
+  /* ===========================
+     RESPONSIVE
+  =========================== */
+  @media (max-width: 900px) {
+    .grid-4 { grid-template-columns: 1fr 1fr; }
+    .grid-3 { grid-template-columns: 1fr 1fr; }
+    .grid-2 { grid-template-columns: 1fr; }
+  }
+
+  @media (max-width: 600px) {
+    .main { padding: 20px 16px; margin-left: 0; padding-top: 60px; }
+    .sidebar { width: 100%; height: 52px; flex-direction: row; padding: 0 12px; border-right: none; border-bottom: 1px solid var(--border); overflow-x: auto; }
+    .sidebar .logo { display: none; }
+    .nav-item { padding: 0 14px; height: 52px; border-left: none; border-bottom: 2px solid transparent; flex-shrink: 0; width: auto; }
+    .nav-item.active { border-left-color: transparent; border-bottom-color: var(--accent); background: transparent; }
+    .nav-label { display: none; }
+    .grid-4, .grid-3, .grid-2 { grid-template-columns: 1fr; }
+    .exercise-row { grid-template-columns: 2fr 1fr 1fr auto; }
+  }
+
+  /* ===========================
+     TRAINING DOTS
+  =========================== */
+  .tr-dot {
+    width: 13px; height: 13px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border);
+    background: transparent;
+    cursor: pointer;
+    transition: all 0.12s;
+  }
+  .tr-dot:hover { border-color: var(--accent4); }
+  .tr-dot.tr-dot-done { background: var(--accent4); border-color: var(--accent4); }
+
+  /* ===========================
+     QUICK-ADD MODAL
+  =========================== */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.15s ease;
+  }
+
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px;
+    width: 360px;
+    max-width: 95vw;
+    animation: slideUp 0.2s ease;
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+  }
+
+  .modal-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+  }
+
+  .modal-close {
+    background: none;
+    border: none;
+    color: var(--text3);
+    font-size: 18px;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0;
+  }
+  .modal-close:hover { color: var(--text); }
+
+  .modal-field { margin-bottom: 12px; }
+  .modal-label {
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text3);
+    margin-bottom: 5px;
+  }
+
+  .modal-time-row {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* ===========================
+     AGENDA STYLES
+  =========================== */
+  .agenda-layout { display: grid; grid-template-columns: 280px 1fr; gap: 20px; }
+  @media (max-width: 900px) { .agenda-layout { grid-template-columns: 1fr; } }
+
+  .mini-cal { user-select: none; }
+  .cal-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .cal-nav-btn { background: none; border: 1px solid var(--border); color: var(--text2); border-radius: 6px; padding: 4px 10px; cursor: pointer; font-size: 14px; transition: all 0.2s; }
+  .cal-nav-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .cal-month-label { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 14px; }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+  .cal-day-name { font-size: 9px; letter-spacing: 1px; text-transform: uppercase; color: var(--text3); text-align: center; padding: 4px 0; }
+  .cal-day {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s;
+    position: relative;
+    color: var(--text2);
+  }
+  .cal-day:hover { background: var(--surface2); color: var(--text); }
+  .cal-day.today { background: rgba(124,111,205,0.15); color: var(--accent); font-weight: 700; }
+  .cal-day.selected { background: var(--accent); color: #fff; font-weight: 700; }
+  .cal-day.other-month { color: var(--text3); opacity: 0.4; }
+  .cal-day.has-events::after {
+    content: '';
+    position: absolute;
+    bottom: 3px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--accent2);
+  }
+  .cal-day.selected.has-events::after { background: rgba(255,255,255,0.7); }
+
+  .event-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 14px;
+    background: var(--surface2);
+    border-radius: 10px;
+    border-left: 3px solid var(--accent);
+    margin-bottom: 8px;
+    transition: all 0.2s;
+  }
+  .event-item:hover { border-left-color: var(--accent2); }
+  .event-time { font-size: 11px; color: var(--accent); white-space: nowrap; min-width: 40px; margin-top: 2px; }
+  .event-body { flex: 1; }
+  .event-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 13px; }
+  .event-desc { font-size: 11px; color: var(--text2); margin-top: 3px; }
+  .event-cat-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
+
+  .upcoming-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 12px;
+  }
+  .upcoming-item:last-child { border-bottom: none; }
+  .upcoming-date-badge {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 4px 8px;
+    font-size: 10px;
+    text-align: center;
+    min-width: 38px;
+    color: var(--accent2);
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+  }
+
+  /* VIEW TOGGLE */
+  .view-toggle {
+    display: flex;
+    gap: 4px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 3px;
+  }
+  .view-toggle-btn {
+    padding: 5px 14px;
+    border-radius: 6px;
+    font-size: 10px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    color: var(--text3);
+    transition: all 0.15s;
+  }
+  .view-toggle-btn.active { background: var(--surface); color: var(--accent); box-shadow: 0 1px 4px rgba(0,0,0,0.3); }
+  .view-toggle-btn:hover:not(.active) { color: var(--text2); }
+
+  /* DAY TIMELINE */
+  .day-timeline {
+    position: relative;
+    overflow-y: auto;
+    max-height: 560px;
+    padding-right: 4px;
+  }
+  .day-timeline::-webkit-scrollbar { width: 3px; }
+  .day-timeline::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  /* Fixed row height so absolute positioning works */
+  .timeline-row {
+    display: grid;
+    grid-template-columns: 46px 1fr;
+    height: 52px;
+    border-top: 1px solid var(--border);
+    position: relative;
+    flex-shrink: 0;
+  }
+  .timeline-row:last-child { border-bottom: 1px solid var(--border); }
+  .timeline-hour {
+    font-size: 10px;
+    color: var(--text3);
+    padding: 6px 8px 0 0;
+    text-align: right;
+    letter-spacing: 0.5px;
+    line-height: 1;
+    margin-top: -1px;
+    z-index: 1;
+  }
+  .timeline-slot { position: relative; padding: 4px 0 4px 8px; height: 52px; }
+
+  /* Shift label row — taller to fit the label */
+  .timeline-row.shift-start { height: 68px; }
+
+  /* Absolutely positioned spanning events */
+  .timeline-events-layer {
+    position: absolute;
+    left: 46px;
+    top: 0;
+    right: 0;
+    pointer-events: none;
+  }
+
+  .timeline-event {
+    position: absolute;
+    left: 8px;
+    right: 4px;
+    border-left: 3px solid var(--accent);
+    border-radius: 0 6px 6px 0;
+    padding: 4px 8px;
+    font-size: 12px;
+    cursor: default;
+    transition: opacity 0.15s;
+    pointer-events: all;
+    overflow: hidden;
+    box-sizing: border-box;
+    min-height: 22px;
+  }
+  .timeline-event:hover { opacity: 0.85; }
+  .timeline-event-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .timeline-event-meta { font-size: 10px; color: var(--text2); margin-top: 1px; }
+
+  .timeline-now-line {
+    position: absolute;
+    left: 0; right: 0;
+    height: 1px;
+    background: var(--accent4);
+    z-index: 3;
+    pointer-events: none;
+  }
+  .timeline-now-dot {
+    position: absolute;
+    left: -6px;
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--accent4);
+    transform: translateY(-3px);
+    z-index: 3;
+  }
+
+  .agenda-view-panel { display: none; }
+  .agenda-view-panel.active { display: block; }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<nav class="sidebar" id="sidebar">
+  <div class="logo">P<span>.</span>OS</div>
+  <div class="nav-item active" onclick="switchTab('home')">
+    <span class="nav-icon">⌂</span>
+    <span class="nav-label">Home</span>
+  </div>
+  <div class="nav-item" onclick="switchTab('finance')">
+    <span class="nav-icon">◈</span>
+    <span class="nav-label">Finance</span>
+  </div>
+  <div class="nav-item" onclick="switchTab('nutrition')">
+    <span class="nav-icon">◉</span>
+    <span class="nav-label">Nutrition</span>
+  </div>
+  <div class="nav-item" onclick="switchTab('training')">
+    <span class="nav-icon">⬡</span>
+    <span class="nav-label">Training</span>
+  </div>
+  <div class="nav-item" onclick="switchTab('agenda')">
+    <span class="nav-icon">▦</span>
+    <span class="nav-label">Agenda</span>
+  </div>
+  <div class="nav-item" onclick="switchTab('assistant')">
+    <span class="nav-icon">◆</span>
+    <span class="nav-label">Assistant</span>
+  </div>
+</nav>
+
+<!-- MAIN CONTENT -->
+<main class="main">
+
+  <!-- =================== HOME =================== -->
+  <div class="tab active" id="tab-home">
+    <div class="page-header">
+      <div class="home-date" id="today-date"></div>
+      <div class="page-title">Good <span id="greeting-time" style="color:var(--accent)"></span>, Domino.</div>
+      <div class="page-sub">Here's your daily overview</div>
+    </div>
+
+    <!-- STAT ROW -->
+    <div class="grid grid-4">
+      <div class="card">
+        <div class="card-label">Calories Today</div>
+        <div class="card-value" id="home-cal">—</div>
+        <div class="card-sub" id="home-cal-goal">/ — kcal goal</div>
+        <div class="progress-track"><div class="progress-fill" id="home-cal-bar" style="width:0%;background:var(--accent3)"></div></div>
+      </div>
+      <div class="card">
+        <div class="card-label">Habits Done</div>
+        <div class="card-value" id="home-habits">0/0</div>
+        <div class="card-sub" id="home-habits-sub">Keep going</div>
+        <div class="progress-track"><div class="progress-fill" id="home-habits-bar" style="width:0%;background:var(--accent2)"></div></div>
+      </div>
+      <div class="card">
+        <div class="card-label">Last Workout</div>
+        <div class="card-value" style="font-size:16px" id="home-workout">—</div>
+        <div class="card-sub" id="home-workout-sub">No recent session</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Monthly Balance</div>
+        <div class="card-value" id="home-balance" style="color:var(--green)">€0</div>
+        <div class="card-sub" id="home-balance-sub">Income - Expenses</div>
+      </div>
+    </div>
+
+    <!-- HABITS -->
+    <div class="card section-gap">
+      <div class="card-title">Today's Habits</div>
+      <div id="home-habit-grid">
+        <div style="color:var(--text3);font-size:12px">No habits added yet — go to Agenda tab to set up habits.</div>
+      </div>
+    </div>
+
+    <!-- TODAY'S AGENDA PREVIEW -->
+    <div class="card section-gap">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div class="card-title" style="margin-bottom:0">Today's Events</div>
+        <button class="btn btn-ghost btn-sm" onclick="switchTab('agenda');document.querySelectorAll('.nav-item')[4].classList.add('active');document.querySelectorAll('.nav-item').forEach((n,i)=>i!==4&&n.classList.remove('active'))">View Agenda →</button>
+      </div>
+      <div id="home-agenda-preview"><div style="color:var(--text3);font-size:12px">No events today.</div></div>
+    </div>
+  </div>
+
+  <!-- =================== FINANCE =================== -->
+  <div class="tab" id="tab-finance">
+    <div class="page-header">
+      <div class="page-title">Finance <span style="color:var(--accent2)">◈</span></div>
+      <div class="page-sub">Maandelijkse lasten & schulden</div>
+    </div>
+
+    <!-- OVERVIEW -->
+    <div class="grid grid-3">
+      <div class="card">
+        <div class="card-label">Maandinkomen</div>
+        <div style="display:flex;gap:8px;align-items:center;margin-top:6px">
+          <input type="number" id="fin-income-input" placeholder="€" step="0.01"
+            style="font-family:'Syne',sans-serif;font-weight:700;font-size:22px;letter-spacing:-1px;background:transparent;border:none;border-bottom:1px solid var(--border);border-radius:0;padding:2px 0;color:var(--green);width:100%"
+            oninput="saveIncome()">
+        </div>
+        <div class="card-sub">Na belasting</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Totaal Lasten</div>
+        <div class="card-value" style="color:var(--red)" id="fin-expenses">€0</div>
+        <div class="card-sub">per maand</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Over</div>
+        <div class="card-value" id="fin-net">€0</div>
+        <div class="card-sub" id="fin-net-sub">inkomen − lasten</div>
+      </div>
+    </div>
+
+    <!-- MAANDELIJKSE LASTEN -->
+    <div class="card section-gap">
+      <div class="card-title">Maandelijkse Lasten</div>
+      <div class="grid grid-2" style="gap:8px;margin-bottom:10px">
+        <input type="text" id="exp-name" placeholder="Beschrijving (bijv. Huur)">
+        <input type="number" id="exp-amount" placeholder="Bedrag (€)" step="0.01">
+        <select id="exp-cat">
+          <option value="wonen">🏠 Wonen</option>
+          <option value="transport">🚗 Transport</option>
+          <option value="abonnementen">📱 Abonnementen</option>
+          <option value="verzekering">🛡 Verzekering</option>
+          <option value="boodschappen">🛒 Boodschappen</option>
+          <option value="gezondheid">💊 Gezondheid</option>
+          <option value="sport">💪 Sport</option>
+          <option value="overig">📦 Overig</option>
+        </select>
+        <input type="number" id="exp-day" placeholder="Betaaldag (1–31)" min="1" max="31">
+      </div>
+      <button class="btn" onclick="addExpense()">Toevoegen</button>
+      <div class="divider"></div>
+      <div id="expense-list"><div style="color:var(--text3);font-size:12px">Nog geen lasten toegevoegd.</div></div>
+    </div>
+
+    <!-- SCHULDEN -->
+    <div class="card section-gap">
+      <div class="card-title">Schulden</div>
+      <div class="grid grid-2" style="gap:8px;margin-bottom:10px">
+        <input type="text" id="debt-name" placeholder="Naam (bijv. Lening auto)">
+        <input type="number" id="debt-total" placeholder="Totaal bedrag (€)" step="0.01">
+        <input type="number" id="debt-monthly" placeholder="Maandelijkse afbetaling (€)" step="0.01">
+        <input type="number" id="debt-paid" placeholder="Al betaald (€)" step="0.01">
+        <input type="date" id="debt-start" title="Startdatum">
+        <input type="number" id="debt-day" placeholder="Betaaldag (1–31)" min="1" max="31">
+        <select id="debt-cat">
+          <option value="lening">Lening</option>
+          <option value="afbetaling">Afbetaling</option>
+          <option value="krediet">Kredietkaart</option>
+          <option value="overig">Overig</option>
+        </select>
+      </div>
+      <button class="btn btn-sm" onclick="addDebt()">Schuld Toevoegen</button>
+      <div class="divider"></div>
+      <div id="debt-list"><div style="color:var(--text3);font-size:12px">Geen schulden geregistreerd.</div></div>
+    </div>
+  </div>
+
+  <!-- =================== NUTRITION =================== -->
+  <div class="tab" id="tab-nutrition">
+    <div class="page-header">
+      <div class="page-title">Nutrition <span style="color:var(--accent3)">◉</span></div>
+      <div class="page-sub">3000 kcal dagplan — log & track</div>
+    </div>
+
+    <!-- TODAY'S PROGRESS -->
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-label">Calorieën Vandaag</div>
+        <div class="card-value" id="nut-cal">0 <span style="font-size:14px;color:var(--text2)">kcal</span></div>
+        <div class="progress-track" style="height:8px;margin-top:10px">
+          <div class="progress-fill" id="nut-cal-bar" style="width:0%;background:var(--accent3)"></div>
+        </div>
+        <div class="card-sub" id="nut-cal-sub">0 resterend van 3000</div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="margin-bottom:12px">Macros</div>
+        <div class="macro-bars">
+          <div class="macro-row">
+            <span class="macro-label">Eiwit</span>
+            <div class="macro-track"><div class="macro-fill" id="bar-protein" style="width:0%;background:#ff6b6b"></div></div>
+            <span class="macro-val" id="val-protein">0g</span>
+          </div>
+          <div class="macro-row">
+            <span class="macro-label">Koolh.</span>
+            <div class="macro-track"><div class="macro-fill" id="bar-carbs" style="width:0%;background:var(--accent2)"></div></div>
+            <span class="macro-val" id="val-carbs">0g</span>
+          </div>
+          <div class="macro-row">
+            <span class="macro-label">Vet</span>
+            <div class="macro-track"><div class="macro-fill" id="bar-fats" style="width:0%;background:var(--accent)"></div></div>
+            <span class="macro-val" id="val-fats">0g</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DIENST TOGGLE -->
+    <div class="card section-gap">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px">
+        <div class="card-title" style="margin-bottom:0">Dagplan</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <button class="shift-btn active-early" id="mp-btn-vroeg"   onclick="mpSwitch('vroeg',this)"  >☀ Vroege Dienst</button>
+          <button class="shift-btn"              id="mp-btn-laat"    onclick="mpSwitch('laat',this)"   >🌙 Late Dienst</button>
+          <button class="shift-btn"              id="mp-btn-weekend" onclick="mpSwitch('weekend',this)">✦ Weekend / Vrij</button>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:4px">
+        <span class="badge badge-teal" id="mp-total-kcal">— kcal</span>
+        <span class="badge badge-red"  id="mp-total-prot">—g eiwit</span>
+        <button class="btn btn-sm btn-ghost" style="margin-left:auto" onclick="mpLogAll()">+ Log heel dagplan</button>
+      </div>
+    </div>
+
+    <!-- MAALTIJDSLOTS -->
+    <div id="mp-slots"></div>
+
+    <!-- HANDMATIG LOGGGEN -->
+    <div class="card section-gap">
+      <div class="card-title">Handmatig Loggen</div>
+      <div class="grid grid-2" style="gap:10px;margin-bottom:10px">
+        <input type="text" id="food-name" placeholder="Naam">
+        <input type="number" id="food-cal" placeholder="Calorieën (kcal)">
+        <input type="number" id="food-protein" placeholder="Eiwit (g)">
+        <input type="number" id="food-carbs" placeholder="Koolh. (g)">
+        <input type="number" id="food-fats" placeholder="Vet (g)">
+        <select id="food-meal">
+          <option value="breakfast">Ontbijt</option>
+          <option value="lunch">Lunch</option>
+          <option value="dinner">Avondeten</option>
+          <option value="snack">Snack</option>
+        </select>
+      </div>
+      <button class="btn" onclick="addFood()">Log</button>
+    </div>
+
+    <!-- FOOD LOG VANDAAG -->
+    <div class="card section-gap">
+      <div class="card-title">Log Vandaag</div>
+      <div id="food-log"><div style="color:var(--text3);font-size:12px">Nog niets gelogd.</div></div>
+    </div>
+
+    <!-- PRODUCTENLIJST UITKLAPBAAR -->
+    <div class="card section-gap">
+      <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer" onclick="toggleProductenlijst()">
+        <div class="card-title" style="margin-bottom:0">📦 Productenlijst</div>
+        <span id="prod-toggle-icon" style="color:var(--text3);font-size:13px">▼</span>
+      </div>
+      <div id="productenlijst" style="display:none;margin-top:14px;overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse;font-size:12px">
+          <thead>
+            <tr>
+              <th style="text-align:left;padding:6px 10px;border-bottom:1px solid var(--border);font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text3);font-weight:400">Product</th>
+              <th style="text-align:right;padding:6px 10px;border-bottom:1px solid var(--border);font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text3);font-weight:400">Kcal</th>
+              <th style="text-align:right;padding:6px 10px;border-bottom:1px solid var(--border);font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text3);font-weight:400">Eiwit</th>
+              <th style="text-align:right;padding:6px 10px;border-bottom:1px solid var(--border);font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text3);font-weight:400">Koolh.</th>
+              <th style="text-align:right;padding:6px 10px;border-bottom:1px solid var(--border);font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text3);font-weight:400">Vet</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="background:var(--surface2)"><td style="padding:7px 10px;border-bottom:1px solid var(--border)"><strong>Whey Delicious Vanille</strong><br><span style="font-size:10px;color:var(--text3)">XXL Nutrition</span></td><td style="padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;color:var(--accent3)">400</td><td style="padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;color:var(--accent4)">80.0g</td><td style="padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;color:var(--text2);font-size:11px">1 scoop 30g<br>= 120 kcal<br>24g eiwit</td></tr>
+<tr style=""><td style="padding:7px 10px;border-bottom:1px solid var(--border)"><strong>Kippendijefilet</strong><br><span style="font-size:10px;color:var(--text3)">Slager (zonder vel)</span></td><td style="padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;color:var(--accent3)">130</td><td style="padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;color:var(--accent4)">19.0g</td><td style="padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;color:var(--text2);font-size:11px">—</td></tr>
+<tr style="background:var(--surface2)"><td style="padding:7px 10px;border-bottom:1px solid var(--border)"><strong>Rundergehakt</strong><br><span style="font-size:10px;color:var(--text3)">Slager (~15% vet)</span></td><td style="padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;color:var(--accent3)">195</td><td style="padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;color:var(--accent4)">18.5g</td><td style="padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;color:var(--text2);font-size:11px">—</td></tr>
+<tr style=""><td style="padding:7px 10px;border-bottom:1px solid var(--border)"><strong>Zalmfilet met Huid</strong><br><span style="font-size:10px;color:var(--text3)">Jumbo Diepvries</span></td><td style="padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;color:var(--accent3)">222</td><td style="padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;color:var(--accent4)">18.0g</td><td style="padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;color:var(--text2);font-size:11px">1 filet 125g<br>= 278 kcal<br>22.5g eiwit</td></tr>
+<tr style="background:var(--surface2)"><td style="padding:7px 10px;border-bottom:1px solid var(--border)"><strong>Yoghurt Griekse Stijl Vanille</strong><br><span style="font-size:10px;color:var(--text3)">Jumbo 1kg</span></td><td style="padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;color:var(--accent3)">133</td><td style="padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;color:var(--accent4)">2.6g</td><td style="padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;color:var(--text2);font-size:11px">150g<br>= 200 kcal</td></tr>
+<tr style=""><td style="padding:7px 10px;border-bottom:1px solid var(--border)"><strong>Houdbare Volle Melk</strong><br><span style="font-size:10px;color:var(--text3)">Jumbo 1L</span></td><td style="padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;color:var(--accent3)">64</td><td style="padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;color:var(--accent4)">3.2g</td><td style="padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;color:var(--text2);font-size:11px">300ml<br>= 192 kcal</td></tr>
+<tr style="background:var(--surface2)"><td style="padding:7px 10px;border-bottom:1px solid var(--border)"><strong>Kaas Jong 48+</strong><br><span style="font-size:10px;color:var(--text3)">Jumbo</span></td><td style="padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;color:var(--accent3)">377</td><td style="padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;color:var(--accent4)">23.0g</td><td style="padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;color:var(--text2);font-size:11px">1 plak 15g<br>= 57 kcal<br>3.45g eiwit</td></tr>
+<tr style=""><td style="padding:7px 10px;border-bottom:1px solid var(--border)"><strong>Medium Ei</strong><br><span style="font-size:10px;color:var(--text3)">Standaard</span></td><td style="padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;color:var(--accent3)">143</td><td style="padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;color:var(--accent4)">12.4g</td><td style="padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;color:var(--text2);font-size:11px">1 ei ~50g<br>= 72 kcal<br>6.2g eiwit</td></tr>
+<tr style="background:var(--surface2)"><td style="padding:7px 10px;border-bottom:1px solid var(--border)"><strong>Havermout Fijne Vlokken</strong><br><span style="font-size:10px;color:var(--text3)">Jumbo 1kg</span></td><td style="padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;color:var(--accent3)">372</td><td style="padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;color:var(--accent4)">13.5g</td><td style="padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;color:var(--text2);font-size:11px">80g<br>= 298 kcal</td></tr>
+<tr style=""><td style="padding:7px 10px;border-bottom:1px solid var(--border)"><strong>Crunchy Muesli Naturel</strong><br><span style="font-size:10px;color:var(--text3)">Jumbo 900g</span></td><td style="padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;color:var(--accent3)">425</td><td style="padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;color:var(--accent4)">9.8g</td><td style="padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;color:var(--text2);font-size:11px">30g<br>= 128 kcal</td></tr>
+<tr style="background:var(--surface2)"><td style="padding:7px 10px;border-bottom:1px solid var(--border)"><strong>Penne Rigate onbereid</strong><br><span style="font-size:10px;color:var(--text3)">Jumbo</span></td><td style="padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;color:var(--accent3)">350</td><td style="padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;color:var(--accent4)">11.8g</td><td style="padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;color:var(--text2);font-size:11px">—</td></tr>
+<tr style=""><td style="padding:7px 10px;border-bottom:1px solid var(--border)"><strong>Witte Rijst onbereid</strong><br><span style="font-size:10px;color:var(--text3)">Standaard</span></td><td style="padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;color:var(--accent3)">360</td><td style="padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;color:var(--accent4)">7.0g</td><td style="padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;color:var(--text2);font-size:11px">90g<br>= 324 kcal</td></tr>
+<tr style="background:var(--surface2)"><td style="padding:7px 10px;border-bottom:1px solid var(--border)"><strong>XL Tortilla Naturel</strong><br><span style="font-size:10px;color:var(--text3)">Jumbo 12 stuks</span></td><td style="padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;color:var(--accent3)">301</td><td style="padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;color:var(--accent4)">9.1g</td><td style="padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;color:var(--text2);font-size:11px">1 wrap 61.7g<br>= 186 kcal<br>5.6g eiwit</td></tr>
+<tr style=""><td style="padding:7px 10px;border-bottom:1px solid var(--border)"><strong>Aardappelen Vastkokend</strong><br><span style="font-size:10px;color:var(--text3)">Jumbo 3kg</span></td><td style="padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;color:var(--accent3)">88</td><td style="padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;color:var(--accent4)">2.0g</td><td style="padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;color:var(--text2);font-size:11px">250g<br>= 220 kcal</td></tr>
+<tr style="background:var(--surface2)"><td style="padding:7px 10px;border-bottom:1px solid var(--border)"><strong>Brioche Bun lactosevrij</strong><br><span style="font-size:10px;color:var(--text3)">Mr. BigMouth 4st</span></td><td style="padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;color:var(--accent3)">276</td><td style="padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;color:var(--accent4)">8.7g</td><td style="padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;color:var(--text2);font-size:11px">1 bun 81g<br>= 224 kcal<br>7.1g eiwit</td></tr>
+<tr style=""><td style="padding:7px 10px;border-bottom:1px solid var(--border)"><strong>Witte Bollen</strong><br><span style="font-size:10px;color:var(--text3)">Jumbo 12 stuks</span></td><td style="padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;color:var(--accent3)">250</td><td style="padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;color:var(--accent4)">9.8g</td><td style="padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;color:var(--text2);font-size:11px">1 bol 50g<br>= 125 kcal<br>4.9g eiwit</td></tr>
+<tr style="background:var(--surface2)"><td style="padding:7px 10px;border-bottom:1px solid var(--border)"><strong>Broccoli Roosjes</strong><br><span style="font-size:10px;color:var(--text3)">Jumbo 400g</span></td><td style="padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;color:var(--accent3)">27</td><td style="padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;color:var(--accent4)">2.9g</td><td style="padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;color:var(--text2);font-size:11px">—</td></tr>
+<tr style=""><td style="padding:7px 10px;border-bottom:1px solid var(--border)"><strong>Gewassen Spinazie</strong><br><span style="font-size:10px;color:var(--text3)">Jumbo 400g</span></td><td style="padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;color:var(--accent3)">26</td><td style="padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;color:var(--accent4)">3.2g</td><td style="padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;color:var(--text2);font-size:11px">—</td></tr>
+<tr style="background:var(--surface2)"><td style="padding:7px 10px;border-bottom:1px solid var(--border)"><strong>Vriesverse Aardbeien</strong><br><span style="font-size:10px;color:var(--text3)">Jumbo 750g</span></td><td style="padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;color:var(--accent3)">36</td><td style="padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;color:var(--accent4)">1.1g</td><td style="padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;color:var(--text2);font-size:11px">—</td></tr>
+<tr style=""><td style="padding:7px 10px;border-bottom:1px solid var(--border)"><strong>Ongebrande Notenmix</strong><br><span style="font-size:10px;color:var(--text3)">Jumbo 500g</span></td><td style="padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;color:var(--accent3)">641</td><td style="padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;color:var(--accent4)">19.1g</td><td style="padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;color:var(--text2);font-size:11px">25g<br>= 160 kcal</td></tr>
+<tr style="background:var(--surface2)"><td style="padding:7px 10px;border-bottom:1px solid var(--border)"><strong>Pindakaas Naturel</strong><br><span style="font-size:10px;color:var(--text3)">Jumbo 350g</span></td><td style="padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;color:var(--accent3)">655</td><td style="padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;color:var(--accent4)">23.0g</td><td style="padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;color:var(--text2);font-size:11px">30g<br>= 197 kcal</td></tr>
+<tr style=""><td style="padding:7px 10px;border-bottom:1px solid var(--border)"><strong>Oreo Original</strong><br><span style="font-size:10px;color:var(--text3)">154g</span></td><td style="padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;color:var(--accent3)">472</td><td style="padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;color:var(--accent4)">5.6g</td><td style="padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;color:var(--text2);font-size:11px">2 koekjes 22g<br>= 104 kcal</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- =================== TRAINING =================== -->
+  <div class="tab" id="tab-training">
+    <div class="page-header">
+      <div class="page-title">Training <span style="color:var(--accent4)">⬡</span></div>
+      <div class="page-sub">Thuis · 20kg Dumbbells · Push / Pull / Legs</div>
+    </div>
+
+    <!-- STATS -->
+    <div class="grid grid-3">
+      <div class="card">
+        <div class="card-label">Deze Week</div>
+        <div class="card-value" id="tr-week">0</div>
+        <div class="card-sub">sessies</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Totaal</div>
+        <div class="card-value" id="tr-total">0</div>
+        <div class="card-sub">all time</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Laatste Sessie</div>
+        <div class="card-value" style="font-size:16px" id="tr-last">—</div>
+        <div class="card-sub" id="tr-last-date">—</div>
+      </div>
+    </div>
+
+    <!-- WEEK GRID -->
+    <div class="card section-gap">
+      <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:8px;text-align:center">
+        <div style="background:var(--surface2);border:1px solid var(--accent);border-radius:8px;padding:10px 4px">
+          <div style="font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--text3)">Ma</div>
+          <div style="font-size:11px;font-family:'Syne',sans-serif;font-weight:700;color:var(--accent4);margin-top:4px">Push</div>
+        </div>
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 4px;opacity:0.4">
+          <div style="font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--text3)">Di</div>
+          <div style="font-size:11px;font-family:'Syne',sans-serif;font-weight:700;color:var(--text3);margin-top:4px">Rust</div>
+        </div>
+        <div style="background:var(--surface2);border:1px solid var(--accent);border-radius:8px;padding:10px 4px">
+          <div style="font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--text3)">Wo</div>
+          <div style="font-size:11px;font-family:'Syne',sans-serif;font-weight:700;color:var(--accent);margin-top:4px">Pull</div>
+        </div>
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 4px;opacity:0.4">
+          <div style="font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--text3)">Do</div>
+          <div style="font-size:11px;font-family:'Syne',sans-serif;font-weight:700;color:var(--text3);margin-top:4px">Rust</div>
+        </div>
+        <div style="background:var(--surface2);border:1px solid var(--accent);border-radius:8px;padding:10px 4px">
+          <div style="font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--text3)">Vr</div>
+          <div style="font-size:11px;font-family:'Syne',sans-serif;font-weight:700;color:var(--green);margin-top:4px">Legs</div>
+        </div>
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 4px;opacity:0.4">
+          <div style="font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--text3)">Za</div>
+          <div style="font-size:11px;font-family:'Syne',sans-serif;font-weight:700;color:var(--text3);margin-top:4px">Rust</div>
+        </div>
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 4px;opacity:0.4">
+          <div style="font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--text3)">Zo</div>
+          <div style="font-size:11px;font-family:'Syne',sans-serif;font-weight:700;color:var(--text3);margin-top:4px">Rust</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DAY TABS + REST TIMER -->
+    <div class="card section-gap">
+
+      <!-- Tabs -->
+      <div style="display:flex;gap:0;margin-bottom:16px;border:1px solid var(--border);border-radius:8px;overflow:hidden">
+        <button class="tr-day-tab active" onclick="trSwitch('a',this)" style="flex:1;padding:10px 8px;font-family:'Syne',sans-serif;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;background:var(--accent4);color:#fff;border:none;cursor:pointer;border-right:1px solid var(--border)">Dag A — Push</button>
+        <button class="tr-day-tab" onclick="trSwitch('b',this)" style="flex:1;padding:10px 8px;font-family:'Syne',sans-serif;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;background:var(--surface2);color:var(--text2);border:none;cursor:pointer;border-right:1px solid var(--border)">Dag B — Pull</button>
+        <button class="tr-day-tab" onclick="trSwitch('c',this)" style="flex:1;padding:10px 8px;font-family:'Syne',sans-serif;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;background:var(--surface2);color:var(--text2);border:none;cursor:pointer">Dag C — Legs</button>
+      </div>
+
+      <!-- Rest Timer -->
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px">
+        <span style="font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text3)">Rusttimer</span>
+        <span id="tr-timer-display" style="font-family:'Syne',sans-serif;font-weight:800;font-size:26px;letter-spacing:-1px;color:var(--text);min-width:60px">1:30</span>
+        <button id="tr-timer-btn" onclick="trStartTimer()" style="background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--text2);font-family:'Syne',sans-serif;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;padding:6px 14px;cursor:pointer">Start</button>
+        <div style="flex:1;min-width:80px;height:3px;background:var(--border);border-radius:2px;overflow:hidden">
+          <div id="tr-timer-bar" style="height:100%;background:var(--accent4);border-radius:2px;width:100%;transition:width 0.1s linear"></div>
+        </div>
+      </div>
+
+      <!-- DAG A: PUSH -->
+      <div class="tr-day-panel" id="tr-day-a">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+          <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:22px;letter-spacing:-0.5px">PUSH</div>
+          <span class="badge badge-red" style="font-size:11px;padding:4px 12px">Borst · Schouders · Triceps</span>
+        </div>
+        <div style="overflow-x:auto">
+          <table style="width:100%;border-collapse:collapse;font-size:13px;min-width:400px">
+            <thead><tr style="border-bottom:1px solid var(--border)">
+              <th style="text-align:left;padding:6px 8px;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text3);font-weight:400">#</th>
+              <th style="text-align:left;padding:6px 8px;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text3);font-weight:400">Oefening</th>
+              <th style="text-align:center;padding:6px 8px;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text3);font-weight:400">Sets</th>
+              <th style="text-align:center;padding:6px 8px;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text3);font-weight:400">Reps</th>
+              <th style="text-align:center;padding:6px 8px;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text3);font-weight:400">Gedaan</th>
+            </tr></thead>
+            <tbody id="tbody-a"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- DAG B: PULL -->
+      <div class="tr-day-panel" id="tr-day-b" style="display:none">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+          <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:22px;letter-spacing:-0.5px">PULL</div>
+          <span class="badge" style="font-size:11px;padding:4px 12px;background:rgba(124,111,205,0.15);color:var(--accent)">Rug · Biceps</span>
+        </div>
+        <div style="overflow-x:auto">
+          <table style="width:100%;border-collapse:collapse;font-size:13px;min-width:400px">
+            <thead><tr style="border-bottom:1px solid var(--border)">
+              <th style="text-align:left;padding:6px 8px;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text3);font-weight:400">#</th>
+              <th style="text-align:left;padding:6px 8px;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text3);font-weight:400">Oefening</th>
+              <th style="text-align:center;padding:6px 8px;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text3);font-weight:400">Sets</th>
+              <th style="text-align:center;padding:6px 8px;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text3);font-weight:400">Reps</th>
+              <th style="text-align:center;padding:6px 8px;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text3);font-weight:400">Gedaan</th>
+            </tr></thead>
+            <tbody id="tbody-b"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- DAG C: LEGS -->
+      <div class="tr-day-panel" id="tr-day-c" style="display:none">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+          <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:22px;letter-spacing:-0.5px">LEGS</div>
+          <span class="badge" style="font-size:11px;padding:4px 12px;background:rgba(74,222,128,0.12);color:var(--green)">Benen · Core</span>
+        </div>
+        <div style="overflow-x:auto">
+          <table style="width:100%;border-collapse:collapse;font-size:13px;min-width:400px">
+            <thead><tr style="border-bottom:1px solid var(--border)">
+              <th style="text-align:left;padding:6px 8px;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text3);font-weight:400">#</th>
+              <th style="text-align:left;padding:6px 8px;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text3);font-weight:400">Oefening</th>
+              <th style="text-align:center;padding:6px 8px;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text3);font-weight:400">Sets</th>
+              <th style="text-align:center;padding:6px 8px;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text3);font-weight:400">Reps</th>
+              <th style="text-align:center;padding:6px 8px;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text3);font-weight:400">Gedaan</th>
+            </tr></thead>
+            <tbody id="tbody-c"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Progressie regel -->
+      <div style="background:var(--surface2);border-left:3px solid var(--accent2);border-radius:0 8px 8px 0;padding:12px 16px;margin-top:16px">
+        <div style="font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--accent2);margin-bottom:6px;font-family:'Syne',sans-serif;font-weight:700">Progressief Overload</div>
+        <div style="font-size:12px;color:var(--text2);line-height:1.6">Elke sessie minstens <strong style="color:var(--text)">1 rep meer</strong> op één oefening. Zodra je <strong style="color:var(--text)">12 reps haalt op alle 3 sets</strong>, vertraag de neergaande beweging tot 3–4 sec. Zonder progressie geen groei.</div>
+      </div>
+
+      <!-- Log button -->
+      <div style="display:flex;gap:8px;margin-top:14px;align-items:center">
+        <select id="wo-day-select" style="flex:1">
+          <option value="Dag A — Push">Dag A — Push</option>
+          <option value="Dag B — Pull">Dag B — Pull</option>
+          <option value="Dag C — Legs">Dag C — Legs</option>
+        </select>
+        <input type="number" id="wo-duration" placeholder="Duur (min)" style="width:120px">
+        <input type="date" id="wo-date" style="width:150px">
+        <button class="btn btn-sm btn-green" onclick="saveWorkoutFromSchema()">Sessie Loggen</button>
+      </div>
+    </div>
+
+    <!-- WORKOUT HISTORY -->
+    <div class="card section-gap">
+      <div class="card-title">Sessie Geschiedenis</div>
+      <div id="workout-history"><div style="color:var(--text3);font-size:12px">Nog geen sessies gelogd.</div></div>
+    </div>
+  </div>
+
+
+  <!-- =================== AGENDA =================== -->
+  <div class="tab" id="tab-agenda">
+    <div class="page-header">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px">
+        <div>
+          <div class="page-title">Agenda <span style="color:var(--accent)">▦</span></div>
+          <div class="page-sub">Schedule, events & reminders</div>
+        </div>
+        <div>
+          <div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);margin-bottom:6px">Today's Shift</div>
+          <div class="shift-bar">
+            <button class="shift-btn" id="shift-early"   onclick="setShift('early')"  >☀ Early 06–14</button>
+            <button class="shift-btn" id="shift-evening" onclick="setShift('evening')">🌙 Evening 14–22</button>
+            <button class="shift-btn" id="shift-free"    onclick="setShift('free')"   >✦ Free Day</button>
+            <button class="shift-btn" id="shift-none"    onclick="setShift('none')"   >✕ Clear</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="agenda-layout">
+      <!-- LEFT: Calendar + Add Form -->
+      <div>
+        <!-- Mini Calendar -->
+        <div class="card mini-cal" style="margin-bottom:16px">
+          <div class="cal-nav">
+            <button class="cal-nav-btn" onclick="calPrev()">‹</button>
+            <div class="cal-month-label" id="cal-month-label"></div>
+            <button class="cal-nav-btn" onclick="calNext()">›</button>
+          </div>
+          <div class="cal-grid" id="cal-day-names"></div>
+          <div class="cal-grid" id="cal-grid" style="margin-top:4px"></div>
+        </div>
+
+        <!-- Unified Add Panel -->
+        <div class="card" id="add-panel">
+          <div class="card-title" style="margin-bottom:14px">Add to Day</div>
+
+          <!-- Time range -->
+          <div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);margin-bottom:6px">Time</div>
+          <div style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;margin-bottom:14px">
+            <input type="time" id="ap-from" value="08:00">
+            <span style="color:var(--text3);font-size:12px">→</span>
+            <input type="time" id="ap-to" value="09:00">
+          </div>
+
+          <!-- Description -->
+          <div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);margin-bottom:6px">Description</div>
+          <input type="text" id="ap-desc" placeholder="What are you doing..." style="margin-bottom:14px">
+
+          <!-- Color -->
+          <div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);margin-bottom:8px">Color</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px" id="ap-colors">
+            <div class="color-dot active-color" data-color="#7c6fcd" style="background:#7c6fcd" onclick="selectColor(this)"></div>
+            <div class="color-dot" data-color="#e8c547" style="background:#e8c547" onclick="selectColor(this)"></div>
+            <div class="color-dot" data-color="#4ecdc4" style="background:#4ecdc4" onclick="selectColor(this)"></div>
+            <div class="color-dot" data-color="#ff6b6b" style="background:#ff6b6b" onclick="selectColor(this)"></div>
+            <div class="color-dot" data-color="#4ade80" style="background:#4ade80" onclick="selectColor(this)"></div>
+            <div class="color-dot" data-color="#f97316" style="background:#f97316" onclick="selectColor(this)"></div>
+            <div class="color-dot" data-color="#a78bfa" style="background:#a78bfa" onclick="selectColor(this)"></div>
+            <div class="color-dot" data-color="#888899" style="background:#888899" onclick="selectColor(this)"></div>
+          </div>
+
+          <!-- Pick a habit -->
+          <div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);margin-bottom:8px">Or pick a habit</div>
+          <div id="ap-habit-chips" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px"></div>
+
+          <button class="btn" style="width:100%" onclick="addPanelEntry()">Add</button>
+
+          <div class="divider" style="margin-top:16px"></div>
+
+          <!-- Manage habits inline -->
+          <div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);margin:10px 0 8px">Manage Habits</div>
+          <div style="display:flex;gap:8px">
+            <input type="text" id="habit-name" placeholder="Habit name" style="flex:1">
+            <input type="text" id="habit-icon" placeholder="💧" style="width:52px">
+            <button class="btn btn-sm" onclick="addHabit()" style="flex-shrink:0">+</button>
+          </div>
+          <div id="habit-manage-list" style="margin-top:10px"></div>
+        </div>
+      </div>
+
+      <!-- RIGHT: View panels -->
+      <div>
+        <!-- View toggle header -->
+        <div class="card" style="margin-bottom:16px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+            <div class="card-title" style="margin-bottom:0" id="agenda-day-title">Today</div>
+            <div class="view-toggle">
+              <button class="view-toggle-btn active" onclick="setAgendaView('day',this)">Day</button>
+              <button class="view-toggle-btn" onclick="setAgendaView('events',this)">Events</button>
+              <button class="view-toggle-btn" onclick="setAgendaView('upcoming',this)">Upcoming</button>
+            </div>
+          </div>
+
+          <!-- DAY TIMELINE -->
+          <div class="agenda-view-panel active" id="panel-day">
+            <div class="day-timeline" id="day-timeline"></div>
+          </div>
+
+          <!-- EVENTS LIST -->
+          <div class="agenda-view-panel" id="panel-events">
+            <div style="font-size:11px;color:var(--text3);margin-bottom:10px" id="agenda-day-sub"></div>
+            <div id="agenda-day-events"><div style="color:var(--text3);font-size:12px">No events for this day.</div></div>
+          </div>
+
+          <!-- UPCOMING LIST -->
+          <div class="agenda-view-panel" id="panel-upcoming">
+            <div id="agenda-upcoming"><div style="color:var(--text3);font-size:12px">No upcoming events.</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HABIT TRACKER full width -->
+    <div class="card section-gap">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <div class="card-title" style="margin-bottom:0">Habit Tracker</div>
+        <div class="week-nav">
+          <button class="week-nav-btn" onclick="habitWeekPrev()">‹</button>
+          <span class="week-label" id="habit-week-label"></span>
+          <button class="week-nav-btn" onclick="habitWeekNext()">›</button>
+        </div>
+      </div>
+      <div class="habit-tracker-wrap">
+        <div id="habit-tracker-table"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- =================== ASSISTANT =================== -->
+  <div class="tab" id="tab-assistant">
+    <div class="page-header">
+      <div class="page-title">Assistant <span style="color:var(--accent)">◆</span></div>
+      <div class="page-sub">Powered by Claude — your personal AI</div>
+    </div>
+
+    <div class="card" style="margin-bottom:12px">
+      <div class="card-label">API Key</div>
+      <div style="display:flex;gap:10px;margin-top:6px">
+        <input type="password" id="api-key-input" placeholder="sk-ant-...">
+        <button class="btn btn-sm" onclick="saveApiKey()">Save</button>
+      </div>
+      <div style="font-size:11px;color:var(--text3);margin-top:6px">Stored locally, never sent anywhere except Anthropic's API.</div>
+    </div>
+
+    <div class="chat-window" id="chat-window">
+      <div class="msg">
+        <div class="msg-avatar">◆</div>
+        <div class="msg-bubble">Hey Domino! I'm your personal assistant. Ask me anything — fitness advice, budget help, meal planning, or just a chat.</div>
+      </div>
+    </div>
+
+    <div class="chat-input-row">
+      <input type="text" id="chat-input" placeholder="Ask anything..." onkeydown="if(event.key==='Enter')sendMessage()">
+      <button class="btn" onclick="sendMessage()">Send</button>
+    </div>
+  </div>
+
+</main>
+
+<!-- QUICK-ADD MODAL -->
+<div class="modal-overlay" id="qa-overlay" style="display:none" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="qa-modal-title">Add to Day</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+
+    <div class="modal-field">
+      <div class="modal-label">Time</div>
+      <div class="modal-time-row">
+        <input type="time" id="qa-from">
+        <span style="color:var(--text3);font-size:12px">→</span>
+        <input type="time" id="qa-to">
+      </div>
+    </div>
+
+    <div class="modal-field">
+      <div class="modal-label">Description</div>
+      <input type="text" id="qa-desc" placeholder="What are you doing..." onkeydown="if(event.key==='Enter')submitModal()">
+    </div>
+
+    <div class="modal-field">
+      <div class="modal-label">Color</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap" id="qa-colors">
+        <div class="color-dot active-color" data-color="#7c6fcd" style="background:#7c6fcd" onclick="selectModalColor(this)"></div>
+        <div class="color-dot" data-color="#e8c547" style="background:#e8c547" onclick="selectModalColor(this)"></div>
+        <div class="color-dot" data-color="#4ecdc4" style="background:#4ecdc4" onclick="selectModalColor(this)"></div>
+        <div class="color-dot" data-color="#ff6b6b" style="background:#ff6b6b" onclick="selectModalColor(this)"></div>
+        <div class="color-dot" data-color="#4ade80" style="background:#4ade80" onclick="selectModalColor(this)"></div>
+        <div class="color-dot" data-color="#f97316" style="background:#f97316" onclick="selectModalColor(this)"></div>
+        <div class="color-dot" data-color="#a78bfa" style="background:#a78bfa" onclick="selectModalColor(this)"></div>
+        <div class="color-dot" data-color="#888899" style="background:#888899" onclick="selectModalColor(this)"></div>
+      </div>
+    </div>
+
+    <div class="modal-field">
+      <div class="modal-label">Or pick a habit</div>
+      <div id="qa-habit-chips" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px"></div>
+    </div>
+
+    <button class="btn" style="width:100%;margin-top:4px" onclick="submitModal()">Add</button>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// STORAGE HELPERS
+// ============================================================
+const S = {
+  get: (k, d = null) => { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } },
+  set: (k, v) => localStorage.setItem(k, JSON.stringify(v)),
+};
+
+const todayKey = () => new Date().toISOString().split('T')[0];
+
+// ============================================================
+// NAV
+// ============================================================
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  event?.currentTarget?.classList.add('active');
+  if (name === 'home') updateHome();
+}
+
+// ============================================================
+// GREETING
+// ============================================================
+function setGreeting() {
+  const h = new Date().getHours();
+  const g = h < 12 ? 'morning' : h < 17 ? 'afternoon' : 'evening';
+  document.getElementById('greeting-time').textContent = g;
+  const opts = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+  document.getElementById('today-date').textContent = new Date().toLocaleDateString('en-BE', opts);
+}
+
+// ============================================================
+// HOME OVERVIEW
+// ============================================================
+function updateHome() {
+  const today = todayKey();
+
+  // Calories — fixed 3000 goal
+  const foods = S.get('foods_' + today, []);
+  const totalCal = foods.reduce((s, f) => s + (+f.cal || 0), 0);
+  const goalCal = 3000;
+  document.getElementById('home-cal').textContent = totalCal + ' kcal';
+  document.getElementById('home-cal-goal').textContent = '/ 3000 kcal goal';
+  document.getElementById('home-cal-bar').style.width = Math.min(100, (totalCal / goalCal) * 100) + '%';
+
+  // Habits
+  const habits = S.get('habits', []);
+  const done = S.get('habits_done_' + today, []);
+  const total = habits.length;
+  const doneCount = done.length;
+  document.getElementById('home-habits').textContent = doneCount + '/' + total;
+  document.getElementById('home-habits-sub').textContent = total === 0 ? 'No habits set' : doneCount === total ? '🎉 All done!' : 'Keep going';
+  document.getElementById('home-habits-bar').style.width = total ? (doneCount / total) * 100 + '%' : '0%';
+
+  // Habit grid
+  updateHomeHabits(habits, today);
+
+  // Last workout
+  const workouts = S.get('workouts', []);
+  if (workouts.length > 0) {
+    const last = workouts[workouts.length - 1];
+    document.getElementById('home-workout').textContent = last.name;
+    document.getElementById('home-workout-sub').textContent = last.date;
+  }
+
+  // Finance
+  const income   = S.get('fin_income', 0);
+  const expList  = S.get('expenses', []);
+  const debtList = S.get('debts', []);
+  const totalOut = expList.reduce((s,e) => s + e.amount, 0) + debtList.reduce((s,d) => s + d.monthly, 0);
+  const net      = income - totalOut;
+  document.getElementById('home-balance').textContent = '€' + net.toFixed(2);
+  document.getElementById('home-balance').style.color = net >= 0 ? 'var(--green)' : 'var(--red)';
+  document.getElementById('home-balance-sub').textContent = '€' + income.toFixed(0) + ' inkomen / €' + totalOut.toFixed(0) + ' lasten';
+}
+
+function toggleHabitFromHome(id) {
+  const today = todayKey();
+  let done = S.get('habits_done_' + today, []);
+  done = done.includes(id) ? done.filter(x => x !== id) : [...done, id];
+  S.set('habits_done_' + today, done);
+  renderHabits();
+  updateHome();
+}
+
+// ============================================================
+// FINANCE
+// ============================================================
+function saveIncome() {
+  const val = +document.getElementById('fin-income-input').value || 0;
+  S.set('fin_income', val);
+  renderFinance();
+}
+
+function addExpense() {
+  const name   = document.getElementById('exp-name').value.trim();
+  const amount = +document.getElementById('exp-amount').value;
+  if (!name || !amount) return;
+  const expenses = S.get('expenses', []);
+  expenses.push({
+    id: Date.now(),
+    name,
+    amount,
+    cat: document.getElementById('exp-cat').value,
+    day: +document.getElementById('exp-day').value || null,
+  });
+  S.set('expenses', expenses);
+  ['exp-name','exp-amount','exp-day'].forEach(id => document.getElementById(id).value = '');
+  renderFinance();
+}
+
+function deleteExpense(id) {
+  S.set('expenses', S.get('expenses', []).filter(e => e.id !== id));
+  renderFinance();
+}
+
+function addDebt() {
+  const name    = document.getElementById('debt-name').value.trim();
+  const total   = +document.getElementById('debt-total').value;
+  const monthly = +document.getElementById('debt-monthly').value;
+  if (!name || !total || !monthly) return;
+  const debts = S.get('debts', []);
+  debts.push({
+    id: Date.now(),
+    name,
+    total,
+    monthly,
+    paid:  +document.getElementById('debt-paid').value  || 0,
+    start: document.getElementById('debt-start').value  || todayKey(),
+    day:   +document.getElementById('debt-day').value   || null,
+    cat:   document.getElementById('debt-cat').value,
+  });
+  S.set('debts', debts);
+  ['debt-name','debt-total','debt-monthly','debt-paid','debt-start','debt-day'].forEach(id => document.getElementById(id).value = '');
+  renderFinance();
+}
+
+function deleteDebt(id) {
+  S.set('debts', S.get('debts', []).filter(d => d.id !== id));
+  renderFinance();
+}
+
+const CAT_ICONS = {
+  wonen:'🏠', transport:'🚗', abonnementen:'📱', verzekering:'🛡',
+  boodschappen:'🛒', gezondheid:'💊', sport:'💪', overig:'📦',
+  lening:'🏦', afbetaling:'💳', krediet:'💳',
+};
+
+function renderFinance() {
+  const income   = S.get('fin_income', 0);
+  const expenses = S.get('expenses', []);
+  const debts    = S.get('debts', []);
+
+  // Update income input
+  const inp = document.getElementById('fin-income-input');
+  if (inp && !document.activeElement.isSameNode(inp)) inp.value = income || '';
+
+  // Totals
+  const totalExp    = expenses.reduce((s, e) => s + e.amount, 0);
+  const totalDebtMo = debts.reduce((s, d) => s + d.monthly, 0);
+  const totalOut    = totalExp + totalDebtMo;
+  const net         = income - totalOut;
+
+  document.getElementById('fin-expenses').textContent = '€' + totalOut.toFixed(2);
+  document.getElementById('fin-net').textContent      = '€' + net.toFixed(2);
+  document.getElementById('fin-net').style.color      = net >= 0 ? 'var(--green)' : 'var(--red)';
+  document.getElementById('fin-net-sub').textContent  = net >= 0
+    ? `€${net.toFixed(0)} over na alle lasten`
+    : `€${Math.abs(net).toFixed(0)} tekort!`;
+
+  // Expense list — grouped by category
+  const expEl = document.getElementById('expense-list');
+  if (expenses.length === 0) {
+    expEl.innerHTML = '<div style="color:var(--text3);font-size:12px">Nog geen lasten toegevoegd.</div>';
+  } else {
+    // Sort by day
+    const sorted = [...expenses].sort((a, b) => (a.day || 99) - (b.day || 99));
+    expEl.innerHTML = sorted.map(e => `
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--border)">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="font-size:16px">${CAT_ICONS[e.cat] || '📦'}</span>
+          <div>
+            <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:13px">${e.name}</div>
+            <div style="font-size:11px;color:var(--text3)">${e.cat}${e.day ? ' · dag ' + e.day : ''}</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;color:var(--red)">−€${e.amount.toFixed(2)}</span>
+          <button class="btn btn-sm btn-ghost" style="padding:3px 8px;font-size:10px" onclick="deleteExpense(${e.id})">✕</button>
+        </div>
+      </div>`).join('');
+    expEl.innerHTML += `
+      <div style="display:flex;justify-content:space-between;padding:10px 0;font-family:'Syne',sans-serif;font-weight:700;font-size:13px;color:var(--text2)">
+        <span>Totaal vaste lasten</span>
+        <span style="color:var(--red)">−€${totalExp.toFixed(2)}</span>
+      </div>`;
+  }
+
+  // Debt list
+  const debtEl = document.getElementById('debt-list');
+  if (debts.length === 0) {
+    debtEl.innerHTML = '<div style="color:var(--text3);font-size:12px">Geen schulden geregistreerd.</div>';
+  } else {
+    debtEl.innerHTML = debts.map(d => {
+      const remaining   = Math.max(0, d.total - d.paid);
+      const pct         = Math.min(100, (d.paid / d.total) * 100);
+      const monthsLeft  = d.monthly > 0 ? Math.ceil(remaining / d.monthly) : null;
+      const endDate     = monthsLeft ? (() => {
+        const dt = new Date();
+        dt.setMonth(dt.getMonth() + monthsLeft);
+        return dt.toLocaleDateString('nl-BE', { month: 'long', year: 'numeric' });
+      })() : null;
+
+      return `
+      <div style="margin-bottom:18px;padding-bottom:18px;border-bottom:1px solid var(--border)">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;flex-wrap:wrap;gap:6px">
+          <div>
+            <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:14px">${CAT_ICONS[d.cat] || '🏦'} ${d.name}</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:2px">${d.cat} · gestart ${d.start}${d.day ? ' · betaaldag ' + d.day : ''}</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;color:var(--accent2)">€${remaining.toFixed(0)} resterend</div>
+            <div style="font-size:11px;color:var(--text3)">van €${d.total.toFixed(0)} totaal</div>
+          </div>
+        </div>
+
+        <div class="progress-track" style="height:8px;margin-bottom:6px">
+          <div class="progress-fill" style="width:${pct.toFixed(1)}%;background:var(--accent2)"></div>
+        </div>
+
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+          <div style="display:flex;gap:16px;font-size:12px;color:var(--text2)">
+            <span>−€${d.monthly.toFixed(0)}/mnd</span>
+            ${monthsLeft !== null
+              ? `<span style="color:var(--accent3)">≈ ${monthsLeft} maanden</span>`
+              : ''}
+            ${endDate
+              ? `<span style="color:var(--text3)">klaar ${endDate}</span>`
+              : ''}
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:11px;color:var(--text3)">${pct.toFixed(0)}% afbetaald</span>
+            <button class="btn btn-sm btn-ghost" style="padding:3px 8px;font-size:10px" onclick="deleteDebt(${d.id})">✕</button>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+
+    // Total debt row
+    const totalDebt = debts.reduce((s,d) => s + Math.max(0, d.total - d.paid), 0);
+    debtEl.innerHTML += `
+      <div style="display:flex;justify-content:space-between;font-family:'Syne',sans-serif;font-weight:700;font-size:13px;color:var(--text2)">
+        <span>Totaal schulden resterend</span>
+        <span style="color:var(--accent2)">€${totalDebt.toFixed(0)}</span>
+      </div>`;
+  }
+
+  // Update home tab
+  updateHome();
+}
+
+// ============================================================
+// NUTRITION
+// ============================================================
+function saveGoals() {
+  S.set('nut_goals', {
+    cal: 3000, protein: 180, carbs: 250, fats: 80,
+  });
+  updateNutrition();
+}
+
+function updateNutrition() {
+  const today = todayKey();
+  const foods = S.get('foods_' + today, []);
+  const goals = { cal: 3000, protein: 180, carbs: 250, fats: 80 };
+
+  const totals = foods.reduce((acc, f) => {
+    acc.cal     += +f.cal     || 0;
+    acc.protein += +f.protein || 0;
+    acc.carbs   += +f.carbs   || 0;
+    acc.fats    += +f.fats    || 0;
+    return acc;
+  }, { cal: 0, protein: 0, carbs: 0, fats: 0 });
+
+  const goalCal = goals.cal;
+  document.getElementById('nut-cal').innerHTML = totals.cal + ' <span style="font-size:14px;color:var(--text2)">kcal</span>';
+  document.getElementById('nut-cal-bar').style.width = Math.min(100, (totals.cal / goalCal) * 100) + '%';
+  document.getElementById('nut-cal-sub').textContent = Math.max(0, goalCal - totals.cal) + ' resterend van 3000';
+
+  const pct = (v, g) => g ? Math.min(100, (v / g) * 100) : 0;
+  document.getElementById('bar-protein').style.width = pct(totals.protein, goals.protein) + '%';
+  document.getElementById('bar-carbs').style.width = pct(totals.carbs, goals.carbs) + '%';
+  document.getElementById('bar-fats').style.width = pct(totals.fats, goals.fats) + '%';
+  document.getElementById('val-protein').textContent = totals.protein + 'g / ' + (goals.protein || '?') + 'g';
+  document.getElementById('val-carbs').textContent = totals.carbs + 'g / ' + (goals.carbs || '?') + 'g';
+  document.getElementById('val-fats').textContent = totals.fats + 'g / ' + (goals.fats || '?') + 'g';
+
+  // Food log
+  const log = document.getElementById('food-log');
+  if (foods.length === 0) { log.innerHTML = '<div style="color:var(--text3);font-size:12px">Nothing logged yet.</div>'; return; }
+  const mealOrder = ['breakfast', 'lunch', 'dinner', 'snack'];
+  const byMeal = {};
+  foods.forEach(f => { if (!byMeal[f.meal]) byMeal[f.meal] = []; byMeal[f.meal].push(f); });
+  log.innerHTML = mealOrder.filter(m => byMeal[m]).map(m => `
+    <div style="margin-bottom:12px">
+      <div style="font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text3);margin-bottom:6px">${m}</div>
+      ${byMeal[m].map(f => `
+        <div class="food-log-item">
+          <span>${f.name}</span>
+          <div style="display:flex;gap:10px;align-items:center">
+            <span style="color:var(--accent3)">${f.cal} kcal</span>
+            <span style="font-size:11px;color:var(--text3)">P:${f.protein}g C:${f.carbs}g F:${f.fats}g</span>
+            <button class="btn btn-sm btn-ghost" style="padding:2px 8px;font-size:10px" onclick="deleteFood(${f.id})">✕</button>
+          </div>
+        </div>`).join('')}
+    </div>`).join('');
+}
+
+function addFood() {
+  const name = document.getElementById('food-name').value.trim();
+  const cal = +document.getElementById('food-cal').value;
+  if (!name || !cal) return;
+  const today = todayKey();
+  const foods = S.get('foods_' + today, []);
+  foods.push({
+    id: Date.now(), name, cal,
+    protein: +document.getElementById('food-protein').value || 0,
+    carbs: +document.getElementById('food-carbs').value || 0,
+    fats: +document.getElementById('food-fats').value || 0,
+    meal: document.getElementById('food-meal').value,
+  });
+  S.set('foods_' + today, foods);
+  ['food-name','food-cal','food-protein','food-carbs','food-fats'].forEach(id => document.getElementById(id).value = '');
+  updateNutrition();
+}
+
+function deleteFood(id) {
+  const today = todayKey();
+  S.set('foods_' + today, S.get('foods_' + today, []).filter(f => f.id !== id));
+  updateNutrition();
+}
+
+// ============================================================
+// HABITS
+// ============================================================
+let habitWeekOffset = 0;
+
+function getWeekDates(offset) {
+  const now = new Date();
+  const day = now.getDay(); // 0=Sun
+  const monday = new Date(now);
+  monday.setDate(now.getDate() - ((day + 6) % 7) + offset * 7);
+  const days = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    days.push(fmtDateH(d));
+  }
+  return days;
+}
+
+function fmtDateH(d) {
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+
+function habitWeekPrev() { habitWeekOffset--; renderHabits(); }
+function habitWeekNext() { habitWeekOffset++; renderHabits(); }
+
+function addHabit() {
+  const name = document.getElementById('habit-name').value.trim();
+  const icon = document.getElementById('habit-icon').value.trim() || '✓';
+  if (!name) return;
+  const habits = S.get('habits', []);
+  habits.push({ id: Date.now(), name, icon });
+  S.set('habits', habits);
+  document.getElementById('habit-name').value = '';
+  document.getElementById('habit-icon').value = '';
+  renderHabits();
+  renderAddPanelHabits();
+  renderHabitManageList();
+}
+
+function toggleHabit(habitId, dateStr) {
+  const key = 'habits_done_' + dateStr;
+  let done = S.get(key, []);
+  done = done.includes(habitId) ? done.filter(x => x !== habitId) : [...done, habitId];
+  S.set(key, done);
+  renderHabits();
+  updateHome();
+}
+
+function toggleHabitFromHome(habitId) {
+  const today = todayKey();
+  toggleHabit(habitId, today);
+}
+
+function deleteHabit(id) {
+  S.set('habits', S.get('habits', []).filter(h => h.id !== id));
+  if (apSelectedHabitId === id) apSelectedHabitId = null;
+  renderHabits();
+  renderAddPanelHabits();
+  renderHabitManageList();
+  updateHome();
+}
+
+function calcStreak(habitId) {
+  let streak = 0;
+  const d = new Date();
+  while (true) {
+    const key = fmtDateH(d);
+    const done = S.get('habits_done_' + key, []);
+    if (done.includes(habitId)) { streak++; d.setDate(d.getDate() - 1); }
+    else break;
+  }
+  return streak;
+}
+
+function calcWeekPct(habitId, weekDates) {
+  const today = todayKey();
+  const pastDays = weekDates.filter(d => d <= today);
+  if (pastDays.length === 0) return null;
+  const doneDays = pastDays.filter(d => S.get('habits_done_' + d, []).includes(habitId));
+  return Math.round((doneDays.length / pastDays.length) * 100);
+}
+
+function renderHabits() {
+  const habits = S.get('habits', []);
+  const weekDates = getWeekDates(habitWeekOffset);
+  const today = todayKey();
+
+  // Week label
+  const start = new Date(weekDates[0] + 'T12:00:00');
+  const end = new Date(weekDates[6] + 'T12:00:00');
+  const fmt = d => d.toLocaleDateString('en-BE', { day: 'numeric', month: 'short' });
+  document.getElementById('habit-week-label').textContent = fmt(start) + ' – ' + fmt(end);
+
+  const tableEl = document.getElementById('habit-tracker-table');
+  if (!tableEl) return;
+
+  if (habits.length === 0) {
+    tableEl.innerHTML = '<div style="color:var(--text3);font-size:12px;padding:16px 0">No habits yet. Add one above.</div>';
+    return;
+  }
+
+  const dayNames = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+
+  let html = `<table class="tracker-table">
+    <thead>
+      <tr>
+        <th class="habit-col">Habit</th>
+        ${dayNames.map((d, i) => {
+          const isToday = weekDates[i] === today;
+          return `<th style="${isToday ? 'color:var(--accent2)' : ''}">${d}${isToday ? ' ·' : ''}</th>`;
+        }).join('')}
+        <th>Week</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>`;
+
+  habits.forEach(h => {
+    const streak = calcStreak(h.id);
+    const pct = calcWeekPct(h.id, weekDates);
+    const pctClass = pct === null ? '' : pct >= 80 ? 'high' : pct >= 50 ? 'mid' : 'low';
+
+    html += `<tr>
+      <td class="habit-col">
+        <div class="habit-label">${h.icon} ${h.name}</div>
+        ${streak > 0 ? `<div class="habit-streak">🔥 ${streak} day streak</div>` : ''}
+      </td>`;
+
+    weekDates.forEach(dateStr => {
+      const isDone = S.get('habits_done_' + dateStr, []).includes(h.id);
+      const isFuture = dateStr > today;
+      const isToday = dateStr === today;
+      let cls = 'day-dot';
+      if (isFuture) cls += ' future';
+      else if (isDone) cls += ' done';
+      else cls += ' missed';
+      if (isToday) cls += ' today-dot';
+      const clickHandler = isFuture ? '' : `onclick="toggleHabit(${h.id},'${dateStr}')"`;
+      html += `<td><div class="${cls}" ${clickHandler}>${isDone ? '✓' : isFuture ? '' : '✗'}</div></td>`;
+    });
+
+    html += `<td>${pct !== null ? `<span class="pct-badge ${pctClass}">${pct}%</span>` : '—'}</td>`;
+    html += `<td><button class="btn btn-sm btn-ghost" style="padding:3px 8px;font-size:10px" onclick="deleteHabit(${h.id})">✕</button></td>`;
+    html += '</tr>';
+  });
+
+  html += '</tbody></table>';
+  tableEl.innerHTML = html;
+
+  // Also update home habit grid
+  updateHomeHabits(habits, today);
+}
+
+function updateHomeHabits(habits, today) {
+  const grid = document.getElementById('home-habit-grid');
+  if (!grid) return;
+  if (habits.length === 0) {
+    grid.innerHTML = '<div style="color:var(--text3);font-size:12px">No habits added yet — go to Agenda tab.</div>';
+    return;
+  }
+  const done = S.get('habits_done_' + today, []);
+  grid.innerHTML = `<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:4px">` +
+    habits.map(h => {
+      const isDone = done.includes(h.id);
+      return `<div style="display:flex;align-items:center;gap:6px;padding:7px 14px;border-radius:20px;cursor:pointer;border:1px solid ${isDone ? 'var(--green)' : 'var(--border)'};background:${isDone ? 'rgba(74,222,128,0.08)' : 'var(--surface2)'};color:${isDone ? 'var(--green)' : 'var(--text2)'};font-size:12px" onclick="toggleHabitFromHome(${h.id})">${h.icon} ${h.name}</div>`;
+    }).join('') + `</div>`;
+}
+
+
+// ============================================================
+// QUICK-ADD MODAL
+// ============================================================
+let qaColor = '#7c6fcd';
+let qaHabitId = null;
+
+function openModal(hour) {
+  const pad = n => String(n).padStart(2,'0');
+  document.getElementById('qa-from').value = `${pad(hour)}:00`;
+  document.getElementById('qa-to').value   = `${pad(hour + 1 < 24 ? hour + 1 : 0)}:00`;
+  document.getElementById('qa-desc').value = '';
+  document.getElementById('qa-modal-title').textContent = `Add · ${pad(hour)}:00`;
+  qaColor   = '#7c6fcd';
+  qaHabitId = null;
+
+  // Reset color dots
+  document.querySelectorAll('#qa-colors .color-dot').forEach(d => d.classList.remove('active-color'));
+  document.querySelector('#qa-colors .color-dot').classList.add('active-color');
+
+  // Render habit chips
+  const habits = S.get('habits', []);
+  document.getElementById('qa-habit-chips').innerHTML = habits.length === 0
+    ? '<span style="color:var(--text3);font-size:12px">No habits yet.</span>'
+    : habits.map(h => `<div class="habit-chip-pick" data-id="${h.id}" onclick="selectModalHabit(this,${h.id},'${h.icon} ${h.name}')">${h.icon} ${h.name}</div>`).join('');
+
+  document.getElementById('qa-overlay').style.display = 'flex';
+  setTimeout(() => document.getElementById('qa-desc').focus(), 100);
+}
+
+function closeModal() {
+  document.getElementById('qa-overlay').style.display = 'none';
+}
+
+function selectModalColor(el) {
+  document.querySelectorAll('#qa-colors .color-dot').forEach(d => d.classList.remove('active-color'));
+  el.classList.add('active-color');
+  qaColor = el.dataset.color;
+}
+
+function selectModalHabit(el, id, label) {
+  const chips = document.querySelectorAll('#qa-habit-chips .habit-chip-pick');
+  if (qaHabitId === id) {
+    el.classList.remove('selected');
+    qaHabitId = null;
+    document.getElementById('qa-desc').value = '';
+  } else {
+    chips.forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    qaHabitId = id;
+    document.getElementById('qa-desc').value = label;
+  }
+}
+
+function submitModal() {
+  const desc = document.getElementById('qa-desc').value.trim();
+  const from = document.getElementById('qa-from').value;
+  const to   = document.getElementById('qa-to').value;
+  if (!desc) return;
+
+  const events = S.get('agenda_events', []);
+  events.push({
+    id: Date.now(),
+    title: desc,
+    date: calSelectedDate,
+    time: from,
+    timeEnd: to,
+    color: qaColor,
+    habitId: qaHabitId,
+    cat: qaHabitId ? 'fitness' : 'general',
+    desc: '',
+  });
+  S.set('agenda_events', events);
+
+  if (calSelectedDate === todayKey()) {
+    const tasks = S.get('tasks_' + todayKey(), []);
+    tasks.push({ id: Date.now() + 1, text: desc, habitId: qaHabitId, done: false, color: qaColor });
+    S.set('tasks_' + todayKey(), tasks);
+  }
+
+  closeModal();
+  calRender();
+  renderAgendaDay();
+  renderAgendaUpcoming();
+  updateHomeAgenda();
+
+  const dayPanel = document.getElementById('panel-day');
+  if (dayPanel && dayPanel.classList.contains('active')) renderDayTimeline();
+}
+
+// ============================================================
+// WORKSHIFT
+// ============================================================
+function setShift(type) {
+  const current = S.get('shift_' + calSelectedDate, 'none');
+  const newType = current === type ? 'none' : type;
+  S.set('shift_' + calSelectedDate, newType);
+  renderShiftButtons();
+  const dayPanel = document.getElementById('panel-day');
+  if (dayPanel && dayPanel.classList.contains('active')) renderDayTimeline();
+}
+
+function renderShiftButtons() {
+  const active = S.get('shift_' + calSelectedDate, 'none');
+  ['early','evening','free','none'].forEach(s => {
+    const btn = document.getElementById('shift-' + s);
+    if (!btn) return;
+    btn.className = 'shift-btn';
+    if (s === active && s !== 'none') btn.classList.add('active-' + s);
+  });
+}
+
+// ============================================================
+// UNIFIED ADD PANEL
+// ============================================================
+let apSelectedColor = '#7c6fcd';
+let apSelectedHabitId = null;
+
+function selectColor(el) {
+  document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('active-color'));
+  el.classList.add('active-color');
+  apSelectedColor = el.dataset.color;
+}
+
+function renderAddPanelHabits() {
+  const habits = S.get('habits', []);
+  const el = document.getElementById('ap-habit-chips');
+  if (!el) return;
+  el.innerHTML = habits.length === 0
+    ? '<span style="color:var(--text3);font-size:12px">No habits yet — add below.</span>'
+    : habits.map(h => `
+        <div class="habit-chip-pick ${apSelectedHabitId === h.id ? 'selected' : ''}"
+             onclick="selectHabitChip(${h.id}, '${h.icon} ${h.name}')">
+          ${h.icon} ${h.name}
+        </div>`).join('');
+}
+
+function selectHabitChip(id, label) {
+  if (apSelectedHabitId === id) {
+    apSelectedHabitId = null;
+    document.getElementById('ap-desc').value = '';
+  } else {
+    apSelectedHabitId = id;
+    document.getElementById('ap-desc').value = label;
+  }
+  renderAddPanelHabits();
+}
+
+function renderHabitManageList() {
+  const habits = S.get('habits', []);
+  const el = document.getElementById('habit-manage-list');
+  if (!el) return;
+  if (habits.length === 0) { el.innerHTML = ''; return; }
+  el.innerHTML = habits.map(h => `
+    <div class="habit-manage-row">
+      <span>${h.icon} ${h.name}</span>
+      <button class="btn btn-sm btn-ghost" style="padding:2px 8px;font-size:10px" onclick="deleteHabit(${h.id})">✕</button>
+    </div>`).join('');
+}
+
+function addPanelEntry() {
+  const desc = document.getElementById('ap-desc').value.trim();
+  const from = document.getElementById('ap-from').value;
+  const to   = document.getElementById('ap-to').value;
+  if (!desc) return;
+
+  const events = S.get('agenda_events', []);
+  events.push({
+    id: Date.now(),
+    title: desc,
+    date: calSelectedDate,
+    time: from,
+    timeEnd: to,
+    color: apSelectedColor,
+    habitId: apSelectedHabitId,
+    cat: apSelectedHabitId ? 'fitness' : 'general',
+    desc: '',
+  });
+  S.set('agenda_events', events);
+
+  // Also add as a task for today if it's today
+  if (calSelectedDate === todayKey()) {
+    const tasks = S.get('tasks_' + todayKey(), []);
+    tasks.push({ id: Date.now() + 1, text: desc, habitId: apSelectedHabitId, done: false, color: apSelectedColor });
+    S.set('tasks_' + todayKey(), tasks);
+  }
+
+  // Reset
+  document.getElementById('ap-desc').value = '';
+  apSelectedHabitId = null;
+  renderAddPanelHabits();
+  calRender();
+  renderAgendaDay();
+  renderAgendaUpcoming();
+  updateHomeAgenda();
+  renderTasks();
+}
+
+function renderTasks() {
+  const today = todayKey();
+  const tasks = S.get('tasks_' + today, []);
+  // tasks show up in habit tracker section — no separate card anymore
+  // still used by home tab
+  updateHome();
+}
+
+// ============================================================
+// MEALPLAN
+// ============================================================
+const MP_PRODUCTS = [
+  { naam: 'Whey Delicious Vanille (XXL Nutrition)', kcal: 400, eiwit: 80.0, koolh: 0.0,  vet: 0.0  },
+  { naam: 'Kippendijefilet (slager)',               kcal: 130, eiwit: 19.0, koolh: 0.0,  vet: 5.5  },
+  { naam: 'Rundergehakt (slager ~15% vet)',         kcal: 195, eiwit: 18.5, koolh: 0.0,  vet: 13.0 },
+  { naam: 'Zalmfilet met Huid (Jumbo)',             kcal: 222, eiwit: 18.0, koolh: 0.0,  vet: 14.0 },
+  { naam: 'Yoghurt Griekse Stijl Vanille (Jumbo)',  kcal: 133, eiwit:  2.6, koolh: 15.0, vet: 5.5  },
+  { naam: 'Houdbare Volle Melk (Jumbo)',            kcal:  64, eiwit:  3.2, koolh: 4.8,  vet: 3.5  },
+  { naam: 'Kaas Jong 48+ (Jumbo)',                  kcal: 377, eiwit: 23.0, koolh: 0.0,  vet: 31.0 },
+  { naam: 'Medium Ei',                              kcal: 143, eiwit: 12.4, koolh: 0.6,  vet: 10.0 },
+  { naam: 'Havermout Fijne Vlokken (Jumbo)',        kcal: 372, eiwit: 13.5, koolh: 62.0, vet: 7.0  },
+  { naam: 'Crunchy Muesli Naturel (Jumbo)',         kcal: 425, eiwit:  9.8, koolh: 64.0, vet: 14.0 },
+  { naam: 'Penne Rigate onbereid (Jumbo)',          kcal: 350, eiwit: 11.8, koolh: 70.0, vet: 1.5  },
+  { naam: 'Witte Rijst onbereid',                   kcal: 360, eiwit:  7.0, koolh: 80.0, vet: 0.5  },
+  { naam: 'XL Tortilla Naturel (Jumbo)',            kcal: 301, eiwit:  9.1, koolh: 48.0, vet: 8.0  },
+  { naam: 'Aardappelen Vastkokend (Jumbo)',         kcal:  88, eiwit:  2.0, koolh: 19.0, vet: 0.1  },
+  { naam: 'Brioche Bun lactosevrij (Mr. BigMouth)', kcal: 276, eiwit:  8.7, koolh: 44.0, vet: 7.5  },
+  { naam: 'Witte Bollen (Jumbo)',                   kcal: 250, eiwit:  9.8, koolh: 47.8, vet: 1.8  },
+  { naam: 'Broccoli Roosjes (Jumbo)',               kcal:  27, eiwit:  2.9, koolh: 0.7,  vet: 0.7  },
+  { naam: 'Gewassen Spinazie (Jumbo)',              kcal:  26, eiwit:  3.2, koolh: 2.0,  vet: 0.4  },
+  { naam: 'Vriesverse Aardbeien (Jumbo)',           kcal:  36, eiwit:  1.1, koolh: 7.5,  vet: 0.4  },
+  { naam: 'Ongebrande Notenmix (Jumbo)',            kcal: 641, eiwit: 19.1, koolh: 12.0, vet: 55.0 },
+  { naam: 'Pindakaas Naturel (Jumbo)',              kcal: 655, eiwit: 23.0, koolh: 12.0, vet: 52.0 },
+  { naam: 'Oreo Original',                         kcal: 472, eiwit:  5.6, koolh: 67.0, vet: 20.0 },
+];
+
+const MP_MAALTIJDEN = [
+  { naam: 'Ochtendshake',              kcal: 1007, eiwit: 55.2, beschrijving: 'Havermout 80g + Yoghurt 150g + Volle Melk 300ml + Pindakaas 30g + Whey 1 scoop (30g)' },
+  { naam: 'Ochtendshake + 4 Oreos',    kcal: 1215, eiwit: 57.7, beschrijving: 'Havermout 80g + Yoghurt 150g + Volle Melk 300ml + Pindakaas 30g + Whey 1 scoop (30g) + 4x Oreo (44g)' },
+  { naam: 'Yoghurt + Noten + Muesli',  kcal:  488, eiwit: 11.6, beschrijving: 'Griekse Yoghurt 150g + Notenmix 25g + Crunchy Muesli 30g' },
+  { naam: 'Wrap met Kip',              kcal:  559, eiwit: 50.5, beschrijving: 'XL Tortilla 1st (61.7g) + Kipdijefilet 200g + Kaas Jong 30g' },
+  { naam: 'Wrap met Gehakt',           kcal:  689, eiwit: 49.5, beschrijving: 'XL Tortilla 1st (61.7g) + Rundergehakt 200g + Kaas Jong 30g' },
+  { naam: 'Hamburger',                 kcal:  476, eiwit: 29.1, beschrijving: 'Brioche Bun 1st (81g) + Rundergehakt 100g + Kaas Jong ½ plak (15g)' },
+  { naam: 'Rijst + Kip + Broccoli',    kcal:  625, eiwit: 48.7, beschrijving: 'Witte Rijst 90g (onbereid) + Kipdijefilet 200g + Broccoli 150g' },
+  { naam: 'Rijst + Kip + Spinazie',    kcal:  623, eiwit: 45.3, beschrijving: 'Witte Rijst 90g (onbereid) + Kipdijefilet 200g + Spinazie 150g' },
+  { naam: 'Aardappelen + Gehakt',      kcal:  667, eiwit: 46.5, beschrijving: 'Aardappelen 250g + Rundergehakt 200g + Kaas Jong 1 plak (15g)' },
+  { naam: '2 Bolletjes + 2 Eieren',    kcal:  394, eiwit: 22.2, beschrijving: 'Witte Bollen 2st (100g) + Eieren 2st (~50g/st)' },
+];
+
+// Per dienst: array van slot-objecten { label, opties: [index in MP_MAALTIJDEN] }
+const MP_PLANNEN = {
+  vroeg: [
+    { label: '🌅 Ontbijt',   opties: [1, 0] },
+    { label: '🍱 Lunch',     opties: [3, 4, 5] },
+    { label: '🍽️ Avondeten', opties: [6, 7, 8] },
+    { label: '🥤 Snack',     opties: [2, 9] },
+  ],
+  laat: [
+    { label: '🌅 Ontbijt',   opties: [0, 1] },
+    { label: '🍱 Lunch',     opties: [3, 4, 5] },
+    { label: '🍽️ Avondeten', opties: [6, 7, 8] },
+    { label: '🥤 Snack',     opties: [2, 9] },
+  ],
+  weekend: [
+    { label: '🌅 Ontbijt',   opties: [1, 0] },
+    { label: '🍱 Lunch',     opties: [5, 3, 4] },
+    { label: '🍽️ Avondeten', opties: [6, 7, 8] },
+    { label: '🥤 Snack',     opties: [2, 9] },
+  ],
+};
+
+let mpDienst = 'vroeg';
+// Stores selected meal index per slot per dienst
+const mpSelections = { vroeg: {}, laat: {}, weekend: {} };
+
+function mpSwitch(dienst, btn) {
+  mpDienst = dienst;
+  document.querySelectorAll('#tab-mealplan .shift-btn').forEach(b => {
+    b.className = 'shift-btn';
+  });
+  if (dienst === 'vroeg')   btn.classList.add('active-early');
+  if (dienst === 'laat')    btn.classList.add('active-evening');
+  if (dienst === 'weekend') btn.classList.add('active-free');
+  renderMealplan();
+}
+
+function mpSelectMeal(slotIdx, mealIdx) {
+  mpSelections[mpDienst][slotIdx] = mealIdx;
+  renderMealplan();
+}
+
+function renderMealplan() {
+  const plan = MP_PLANNEN[mpDienst];
+  const slotsEl = document.getElementById('mp-slots');
+  if (!slotsEl) return;
+
+  let totalKcal = 0, totalEiwit = 0;
+  const sels = mpSelections[mpDienst];
+  plan.forEach((slot, si) => {
+    const selIdx = sels[si] !== undefined ? sels[si] : slot.opties[0];
+    const meal = MP_MAALTIJDEN[selIdx];
+    totalKcal  += meal.kcal;
+    totalEiwit += meal.eiwit;
+  });
+
+  // Update totals
+  document.getElementById('mp-total-kcal').textContent = totalKcal + ' kcal';
+  document.getElementById('mp-total-prot').textContent = totalEiwit.toFixed(0) + 'g eiwit';
+
+  slotsEl.innerHTML = plan.map((slot, si) => {
+    const selIdx = sels[si] !== undefined ? sels[si] : slot.opties[0];
+    const meal = MP_MAALTIJDEN[selIdx];
+    return `
+    <div class="card section-gap">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+        <div class="card-title" style="margin-bottom:0">${slot.label}</div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="badge badge-teal">${meal.kcal} kcal</span>
+          <span class="badge badge-red">${meal.eiwit}g eiwit</span>
+          <button class="btn btn-sm btn-ghost" onclick="mpLogSlot(${si})">+ Log</button>
+        </div>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px">
+        ${slot.opties.map(mi => {
+          const m = MP_MAALTIJDEN[mi];
+          const active = mi === selIdx;
+          return `<div class="habit-chip-pick ${active ? 'selected' : ''}"
+            onclick="mpSelectMeal(${si}, ${mi})"
+            style="${active ? 'border-color:var(--accent3);background:rgba(78,205,196,0.12);color:var(--accent3)' : ''}">
+            ${m.naam}
+          </div>`;
+        }).join('')}
+      </div>
+      <div style="background:var(--surface2);border-radius:8px;padding:12px">
+        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:13px;margin-bottom:5px">${meal.naam}</div>
+        <div style="font-size:11px;color:var(--text2);margin-bottom:8px">${meal.beschrijving}</div>
+        <div style="display:flex;gap:16px;font-size:11px">
+          <span style="color:var(--accent3)">⚡ ${meal.kcal} kcal</span>
+          <span style="color:var(--accent4)">🥩 ${meal.eiwit}g eiwit</span>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function mpLogSlot(slotIdx) {
+  const today = todayKey();
+  const plan = MP_PLANNEN[mpDienst];
+  const sels = mpSelections[mpDienst];
+  const selIdx = sels[slotIdx] !== undefined ? sels[slotIdx] : plan[slotIdx].opties[0];
+  const meal = MP_MAALTIJDEN[selIdx];
+  const mealTypes = ['breakfast', 'lunch', 'dinner', 'snack'];
+  const foods = S.get('foods_' + today, []);
+  foods.push({ id: Date.now(), name: meal.naam, cal: meal.kcal, protein: meal.eiwit, carbs: 0, fats: 0, meal: mealTypes[slotIdx] || 'snack' });
+  S.set('foods_' + today, foods);
+  updateNutrition();
+}
+
+function mpLogAll() {
+  const today = todayKey();
+  const plan = MP_PLANNEN[mpDienst];
+  const sels = mpSelections[mpDienst];
+  const mealTypes = ['breakfast', 'lunch', 'dinner', 'snack'];
+  const foods = S.get('foods_' + today, []);
+  plan.forEach((slot, si) => {
+    const selIdx = sels[si] !== undefined ? sels[si] : slot.opties[0];
+    const meal = MP_MAALTIJDEN[selIdx];
+    foods.push({ id: Date.now() + si, name: meal.naam, cal: meal.kcal, protein: meal.eiwit, carbs: 0, fats: 0, meal: mealTypes[si] || 'snack' });
+  });
+  S.set('foods_' + today, foods);
+  updateNutrition();
+}
+
+function toggleProductenlijst() {
+  const el = document.getElementById('productenlijst');
+  const icon = document.getElementById('prod-toggle-icon');
+  if (!el) return;
+  const open = el.style.display === 'none';
+  el.style.display = open ? 'block' : 'none';
+  icon.textContent = open ? '▲' : '▼';
+}
+
+// ============================================================
+// TRAINING SCHEMA
+// ============================================================
+function trRows(exercises, day) {
+  return exercises.map((ex, i) => {
+    const n = String(i+1).padStart(2,'0');
+    return `<tr style="border-bottom:1px solid var(--border)">
+      <td style="padding:10px 8px;color:var(--text3);font-size:11px">${n}</td>
+      <td style="padding:10px 8px">
+        <div style="font-weight:500;color:var(--text);font-size:13px">${ex[0]}</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px">${ex[1]}</div>
+      </td>
+      <td style="padding:10px 8px;text-align:center;color:var(--text2)">${ex[2]}</td>
+      <td style="padding:10px 8px;text-align:center;color:var(--text2)">${ex[3]}</td>
+      <td style="padding:10px 8px;text-align:center">
+        <div style="display:flex;gap:5px;justify-content:center">
+          <div class="tr-dot" onclick="trToggleDot(this)"></div>
+          <div class="tr-dot" onclick="trToggleDot(this)"></div>
+          <div class="tr-dot" onclick="trToggleDot(this)"></div>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function renderTrainingSchema() {
+  const bodyA = document.getElementById('tbody-a');
+  const bodyB = document.getElementById('tbody-b');
+  const bodyC = document.getElementById('tbody-c');
+  if (bodyA) bodyA.innerHTML = trRows([
+    ['Dumbbell Floor Press',       'Plat op de grond, ellebogen 45°',     '3','8–12'],
+    ['Dumbbell Shoulder Press',    'Zittend of staand, gecontroleerd',     '3','8–12'],
+    ['Lateral Raises',             'Lichte gewichten, langzaam omhoog',    '3','15'],
+    ['Chest Flyes',                'Stretch onderaan vasthouden',          '3','8–12'],
+    ['Overhead Tricep Extension',  'Beide handen, ellebogen omhoog',       '3','8–12'],
+    ['Tricep Kickbacks',           'Romp parallel aan de grond',           '3','8–12'],
+  ], 'a');
+  if (bodyB) bodyB.innerHTML = trRows([
+    ['Bent-Over Row',      'Rug recht, beide dumbbells',              '3','8–12'],
+    ['Single-Arm Row',     'Elleboog langs het lichaam trekken',      '3','8–12'],
+    ['Dumbbell Deadlift',  'Heupen naar achteren, rug neutraal',      '3','8–12'],
+    ['Reverse Flyes',      'Voorover gebogen, armen breed',           '3','8–12'],
+    ['Dumbbell Curl',      'Ellebogen vast langs het lichaam',        '3','8–12'],
+    ['Hammer Curl',        'Duim omhoog, neutrale grip',              '3','8–12'],
+  ], 'b');
+  if (bodyC) bodyC.innerHTML = trRows([
+    ['Goblet Squat',       'Dumbbell voor de borst, diep zakken',     '3','8–12'],
+    ['Romanian Deadlift',  'Benen licht gebogen, stretch hamstrings', '3','8–12'],
+    ['Alternating Lunge',  'Knie raakt bijna de grond',               '3','8–12'],
+    ['Step-Up (stoel)',    'Volle voet op de stoel, controlled',      '3','8–12'],
+    ['Calf Raises',        'Dumbbells vasthouden, langzaam omhoog',   '3','20'],
+    ['Weighted Crunch',    'Dumbbell op borst, langzaam omhoog',      '3','15'],
+  ], 'c');
+}
+
+function trSwitch(day, btn) {
+  document.querySelectorAll('.tr-day-panel').forEach(p => p.style.display = 'none');
+  document.querySelectorAll('.tr-day-tab').forEach(b => {
+    b.style.background = 'var(--surface2)';
+    b.style.color = 'var(--text2)';
+  });
+  document.getElementById('tr-day-' + day).style.display = 'block';
+  const colors = { a: 'var(--accent4)', b: 'var(--accent)', c: 'var(--green)' };
+  btn.style.background = colors[day] || 'var(--accent)';
+  btn.style.color = '#fff';
+  // sync log select
+  const sel = document.getElementById('wo-day-select');
+  if (sel) sel.selectedIndex = ['a','b','c'].indexOf(day);
+}
+
+function trToggleDot(dot) {
+  dot.classList.toggle('tr-dot-done');
+  if (dot.classList.contains('tr-dot-done')) trStartTimer();
+}
+
+// Rest timer
+let trTimerInterval = null;
+let trTimerSecs = 90;
+const TR_TOTAL = 90;
+
+function trStartTimer() {
+  if (trTimerInterval) { clearInterval(trTimerInterval); trTimerInterval = null; }
+  trTimerSecs = TR_TOTAL;
+  const btn = document.getElementById('tr-timer-btn');
+  btn.style.background = 'var(--accent4)';
+  btn.style.color = '#fff';
+  btn.style.borderColor = 'var(--accent4)';
+  btn.textContent = 'Bezig...';
+  trUpdateTimer();
+  trTimerInterval = setInterval(() => {
+    trTimerSecs--;
+    trUpdateTimer();
+    if (trTimerSecs <= 0) {
+      clearInterval(trTimerInterval);
+      trTimerInterval = null;
+      btn.style.background = 'var(--green)';
+      btn.style.borderColor = 'var(--green)';
+      btn.textContent = 'Start';
+      document.getElementById('tr-timer-display').textContent = 'GO!';
+      document.getElementById('tr-timer-bar').style.width = '100%';
+      setTimeout(() => {
+        document.getElementById('tr-timer-display').textContent = '1:30';
+        btn.style.background = 'var(--surface)';
+        btn.style.color = 'var(--text2)';
+        btn.style.borderColor = 'var(--border)';
+      }, 1500);
+    }
+  }, 1000);
+}
+
+function trUpdateTimer() {
+  const m = Math.floor(trTimerSecs / 60);
+  const s = trTimerSecs % 60;
+  document.getElementById('tr-timer-display').textContent = m + ':' + String(s).padStart(2,'0');
+  document.getElementById('tr-timer-bar').style.width = (trTimerSecs / TR_TOTAL * 100) + '%';
+}
+
+function saveWorkoutFromSchema() {
+  const sel = document.getElementById('wo-day-select');
+  const name = sel ? sel.value : 'Training';
+  const date = document.getElementById('wo-date').value || todayKey();
+  const duration = +document.getElementById('wo-duration').value || 0;
+  const wos = S.get('workouts', []);
+  wos.push({ id: Date.now(), name, type: 'strength', date, duration, exercises: [], notes: '' });
+  S.set('workouts', wos);
+  // Reset dots
+  document.querySelectorAll('.tr-dot-done').forEach(d => d.classList.remove('tr-dot-done'));
+  renderWorkouts();
+}
+
+// ============================================================
+// TRAINING OLD (keep renderWorkouts + deleteWo)
+// ============================================================
+function addExerciseRow() {
+  const row = document.createElement('div');
+  row.className = 'exercise-input-row';
+  row.style.cssText = 'display:grid;grid-template-columns:2fr 1fr 1fr 1fr auto;gap:8px;margin-bottom:8px;align-items:center';
+  row.innerHTML = `
+    <input type="text" placeholder="Exercise name">
+    <input type="number" placeholder="Sets">
+    <input type="number" placeholder="Reps">
+    <input type="number" placeholder="kg" step="0.5">
+    <button class="btn btn-sm btn-ghost" onclick="this.closest('.exercise-input-row').remove()">✕</button>`;
+  document.getElementById('exercise-inputs').appendChild(row);
+}
+
+function saveWorkout() {
+  const name = document.getElementById('wo-name').value.trim();
+  const date = document.getElementById('wo-date').value || todayKey();
+  if (!name) return;
+  const rows = document.querySelectorAll('.exercise-input-row');
+  const exercises = [];
+  rows.forEach(row => {
+    const inputs = row.querySelectorAll('input');
+    if (inputs[0].value.trim()) {
+      exercises.push({ name: inputs[0].value, sets: inputs[1].value, reps: inputs[2].value, weight: inputs[3].value });
+    }
+  });
+  const workouts = S.get('workouts', []);
+  workouts.push({
+    id: Date.now(),
+    name,
+    type: document.getElementById('wo-type').value,
+    date,
+    duration: +document.getElementById('wo-duration').value || 0,
+    exercises,
+    notes: document.getElementById('wo-notes').value,
+  });
+  S.set('workouts', workouts);
+  document.getElementById('wo-name').value = '';
+  document.getElementById('wo-duration').value = '';
+  document.getElementById('wo-notes').value = '';
+  document.getElementById('exercise-inputs').innerHTML = `
+    <div class="exercise-input-row" style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr auto;gap:8px;margin-bottom:8px;align-items:center">
+      <input type="text" placeholder="Exercise name">
+      <input type="number" placeholder="Sets">
+      <input type="number" placeholder="Reps">
+      <input type="number" placeholder="kg" step="0.5">
+      <button class="btn btn-sm btn-ghost" onclick="this.closest('.exercise-input-row').remove()">✕</button>
+    </div>`;
+  renderWorkouts();
+}
+
+function renderWorkouts() {
+  const workouts = S.get('workouts', []).reverse();
+  const hist = document.getElementById('workout-history');
+
+  // Stats
+  const now = new Date();
+  const startOfWeek = new Date(now); startOfWeek.setDate(now.getDate() - now.getDay());
+  const weekWorkouts = workouts.filter(w => new Date(w.date) >= startOfWeek);
+  document.getElementById('tr-week').textContent = weekWorkouts.length;
+  document.getElementById('tr-total').textContent = workouts.length;
+
+  if (workouts.length > 0) {
+    const last = workouts[0];
+    document.getElementById('tr-last').textContent = last.name;
+    document.getElementById('tr-last-date').textContent = last.date;
+  }
+
+  if (workouts.length === 0) { hist.innerHTML = '<div style="color:var(--text3);font-size:12px">No sessions logged yet.</div>'; return; }
+
+  const typeColors = { strength: 'var(--accent)', cardio: 'var(--accent3)', hiit: 'var(--accent4)', flexibility: 'var(--accent2)', sport: 'var(--green)' };
+
+  hist.innerHTML = workouts.map(w => `
+    <div class="workout-card">
+      <div class="workout-card-header">
+        <div>
+          <span style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px">${w.name}</span>
+          <span class="badge" style="background:rgba(124,111,205,0.12);color:${typeColors[w.type] || 'var(--accent)'};margin-left:8px">${w.type}</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          ${w.duration ? `<span style="font-size:12px;color:var(--text2)">${w.duration} min</span>` : ''}
+          <span style="font-size:11px;color:var(--text3)">${w.date}</span>
+          <button class="btn btn-sm btn-ghost" style="padding:3px 8px;font-size:10px" onclick="deleteWorkout(${w.id})">✕</button>
+        </div>
+      </div>
+      ${w.exercises.length > 0 ? `
+        <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:8px;margin-bottom:6px">
+          <span class="col-label" style="font-size:10px;color:var(--text3);letter-spacing:1px;text-transform:uppercase">Exercise</span>
+          <span class="col-label" style="font-size:10px;color:var(--text3);letter-spacing:1px;text-transform:uppercase">Sets</span>
+          <span class="col-label" style="font-size:10px;color:var(--text3);letter-spacing:1px;text-transform:uppercase">Reps</span>
+          <span class="col-label" style="font-size:10px;color:var(--text3);letter-spacing:1px;text-transform:uppercase">Weight</span>
+        </div>
+        ${w.exercises.map(e => `
+          <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:8px;padding:6px 0;border-bottom:1px solid var(--border)">
+            <span style="font-size:13px">${e.name}</span>
+            <span class="set-pill">${e.sets || '—'}</span>
+            <span class="set-pill">${e.reps || '—'}</span>
+            <span class="set-pill">${e.weight ? e.weight + 'kg' : '—'}</span>
+          </div>`).join('')}` : ''}
+      ${w.notes ? `<div style="font-size:12px;color:var(--text2);margin-top:8px;font-style:italic">${w.notes}</div>` : ''}
+    </div>`).join('');
+}
+
+function deleteWorkout(id) {
+  S.set('workouts', S.get('workouts', []).filter(w => w.id !== id));
+  renderWorkouts();
+}
+
+
+// ============================================================
+// ASSISTANT
+// ============================================================
+function saveApiKey() {
+  const key = document.getElementById('api-key-input').value.trim();
+  if (!key) return;
+  S.set('claude_api_key', key);
+  document.getElementById('api-key-input').value = '••••••••••••••••••••';
+  appendMsg('assistant', 'API key saved! Ready to help.');
+}
+
+function appendMsg(role, text) {
+  const win = document.getElementById('chat-window');
+  const div = document.createElement('div');
+  div.className = 'msg ' + (role === 'user' ? 'user' : '');
+  div.innerHTML = `
+    <div class="msg-avatar">${role === 'user' ? '👤' : '◆'}</div>
+    <div class="msg-bubble">${text}</div>`;
+  win.appendChild(div);
+  win.scrollTop = win.scrollHeight;
+  return div;
+}
+
+function showTyping() {
+  const win = document.getElementById('chat-window');
+  const div = document.createElement('div');
+  div.className = 'msg';
+  div.id = 'typing-indicator';
+  div.innerHTML = `<div class="msg-avatar">◆</div><div class="msg-bubble"><div class="typing-indicator"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div>`;
+  win.appendChild(div);
+  win.scrollTop = win.scrollHeight;
+}
+
+function removeTyping() {
+  const el = document.getElementById('typing-indicator');
+  if (el) el.remove();
+}
+
+const chatHistory = [];
+
+async function sendMessage() {
+  const input = document.getElementById('chat-input');
+  const text = input.value.trim();
+  if (!text) return;
+  const apiKey = S.get('claude_api_key');
+  if (!apiKey) { appendMsg('assistant', 'Please save your API key first.'); return; }
+
+  input.value = '';
+  appendMsg('user', text);
+  chatHistory.push({ role: 'user', content: text });
+  showTyping();
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1024,
+        system: 'You are a personal assistant for Domino, based in Belgium. You help with fitness, nutrition, personal finance, and general life advice. Be concise, friendly, and practical.',
+        messages: chatHistory,
+      }),
+    });
+    const data = await res.json();
+    const reply = data.content?.[0]?.text || 'Sorry, something went wrong.';
+    chatHistory.push({ role: 'assistant', content: reply });
+    removeTyping();
+    appendMsg('assistant', reply);
+  } catch (e) {
+    removeTyping();
+    appendMsg('assistant', 'Error connecting to Claude API. Check your key and connection.');
+  }
+}
+
+// ============================================================
+// AGENDA
+// ============================================================
+let calViewDate = new Date();
+let calSelectedDate = todayKey();
+
+const CAT_COLORS = {
+  general: '#7c6fcd', health: '#4ecdc4', fitness: '#ff6b6b',
+  finance: '#e8c547', work: '#4ade80', personal: '#a78bfa', social: '#f97316'
+};
+
+function calRender() {
+  const y = calViewDate.getFullYear(), m = calViewDate.getMonth();
+  const label = calViewDate.toLocaleDateString('en-BE', { month: 'long', year: 'numeric' });
+  document.getElementById('cal-month-label').textContent = label;
+
+  const dayNames = document.getElementById('cal-day-names');
+  dayNames.innerHTML = ['Mo','Tu','We','Th','Fr','Sa','Su'].map(d =>
+    `<div class="cal-day-name">${d}</div>`).join('');
+
+  const firstDay = new Date(y, m, 1);
+  const lastDay = new Date(y, m + 1, 0);
+  // Monday-first: 0=Mon ... 6=Sun
+  let startDow = (firstDay.getDay() + 6) % 7;
+
+  const events = S.get('agenda_events', []);
+  const eventDays = new Set(events.map(e => e.date));
+  const todayStr = todayKey();
+
+  const cells = [];
+  // prev month padding
+  for (let i = 0; i < startDow; i++) {
+    const d = new Date(y, m, 1 - (startDow - i));
+    cells.push({ date: fmtDate(d), day: d.getDate(), otherMonth: true });
+  }
+  for (let d = 1; d <= lastDay.getDate(); d++) {
+    cells.push({ date: fmtDate(new Date(y, m, d)), day: d, otherMonth: false });
+  }
+  while (cells.length % 7 !== 0) {
+    const d = new Date(y, m + 1, cells.length - lastDay.getDate() - startDow + 1);
+    cells.push({ date: fmtDate(d), day: d.getDate(), otherMonth: true });
+  }
+
+  document.getElementById('cal-grid').innerHTML = cells.map(c => {
+    let cls = 'cal-day';
+    if (c.otherMonth) cls += ' other-month';
+    if (c.date === todayStr) cls += ' today';
+    if (c.date === calSelectedDate) cls += ' selected';
+    if (eventDays.has(c.date)) cls += ' has-events';
+    return `<div class="${cls}" onclick="calSelectDate('${c.date}')">${c.day}</div>`;
+  }).join('');
+}
+
+function fmtDate(d) {
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+
+function calSelectDate(dateStr) {
+  calSelectedDate = dateStr;
+  calRender();
+  renderAgendaDay();
+  renderShiftButtons();
+}
+
+function calPrev() { calViewDate.setMonth(calViewDate.getMonth() - 1); calRender(); }
+function calNext() { calViewDate.setMonth(calViewDate.getMonth() + 1); calRender(); }
+
+function addEvent() {
+  // Replaced by addPanelEntry() and submitModal() — kept as no-op to avoid errors
+}
+
+function deleteEvent(id) {
+  S.set('agenda_events', S.get('agenda_events', []).filter(e => e.id !== id));
+  calRender();
+  renderAgendaDay();
+  renderAgendaUpcoming();
+  updateHomeAgenda();
+  const dayPanel = document.getElementById('panel-day');
+  if (dayPanel && dayPanel.classList.contains('active')) renderDayTimeline();
+}
+
+function renderAgendaDay() {
+  const events = S.get('agenda_events', [])
+    .filter(e => e.date === calSelectedDate)
+    .sort((a, b) => (a.time || '99:99').localeCompare(b.time || '99:99'));
+
+  const isToday = calSelectedDate === todayKey();
+  const d = new Date(calSelectedDate + 'T12:00:00');
+  const label = isToday ? 'Today' : d.toLocaleDateString('en-BE', { weekday: 'long', month: 'long', day: 'numeric' });
+  document.getElementById('agenda-day-title').textContent = label;
+  document.getElementById('agenda-day-sub').textContent = events.length + ' event' + (events.length !== 1 ? 's' : '');
+
+  const el = document.getElementById('agenda-day-events');
+  if (events.length === 0) { el.innerHTML = '<div style="color:var(--text3);font-size:12px">No events for this day.</div>'; }
+  else {
+    el.innerHTML = events.map(e => `
+      <div class="event-item" style="border-left-color:${CAT_COLORS[e.cat] || 'var(--accent)'}">
+        <div class="event-cat-dot" style="background:${CAT_COLORS[e.cat] || 'var(--accent)'}"></div>
+        <div class="event-body">
+          <div class="event-title">${e.title}</div>
+          ${e.desc ? `<div class="event-desc">${e.desc}</div>` : ''}
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0">
+          ${e.time ? `<span class="event-time">${e.time}</span>` : ''}
+          <span class="badge" style="background:rgba(124,111,205,0.1);color:${CAT_COLORS[e.cat]}">${e.cat}</span>
+          <button class="btn btn-ghost btn-sm" style="padding:2px 8px;font-size:10px" onclick="deleteEvent(${e.id})">✕</button>
+        </div>
+      </div>`).join('');
+  }
+
+  // Refresh timeline if that panel is active
+  const dayPanel = document.getElementById('panel-day');
+  if (dayPanel && dayPanel.classList.contains('active')) renderDayTimeline();
+}
+
+function renderAgendaUpcoming() {
+  const today = todayKey();
+  const events = S.get('agenda_events', [])
+    .filter(e => e.date >= today)
+    .sort((a, b) => a.date.localeCompare(b.date) || (a.time || '').localeCompare(b.time || ''))
+    .slice(0, 10);
+
+  const el = document.getElementById('agenda-upcoming');
+  if (events.length === 0) { el.innerHTML = '<div style="color:var(--text3);font-size:12px">No upcoming events.</div>'; return; }
+  el.innerHTML = events.map(e => {
+    const d = new Date(e.date + 'T12:00:00');
+    const dayStr = e.date === today ? 'TODAY' : d.toLocaleDateString('en-BE', { day: 'numeric', month: 'short' }).toUpperCase();
+    return `
+    <div class="upcoming-item">
+      <div class="upcoming-date-badge">${dayStr}</div>
+      <div style="flex:1">
+        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:13px">${e.title}</div>
+        ${e.time ? `<div style="font-size:11px;color:var(--text2)">${e.time}</div>` : ''}
+      </div>
+      <div class="event-cat-dot" style="background:${CAT_COLORS[e.cat] || 'var(--accent)'}"></div>
+    </div>`;
+  }).join('');
+}
+
+function setAgendaView(view, btn) {
+  document.querySelectorAll('.view-toggle-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.agenda-view-panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('panel-' + view).classList.add('active');
+  if (view === 'day') renderDayTimeline();
+}
+
+function renderDayTimeline() {
+  const ROW_H = 52;
+  const events = S.get('agenda_events', []).filter(e => e.date === calSelectedDate);
+  const isToday = calSelectedDate === todayKey();
+  const container = document.getElementById('day-timeline');
+
+  // Save scroll position before rebuild
+  const savedScroll = container.scrollTop;
+
+  const now = new Date();
+  const nowMinutes = isToday ? now.getHours() * 60 + now.getMinutes() : -1;
+
+  const shift = S.get('shift_' + calSelectedDate, 'none');
+  const shiftRanges = { early: [6,14], evening: [14,22] };
+  const shiftRange = shiftRanges[shift] || null;
+  const shiftLabels = { early: '☀ Early  06:00–14:00', evening: '🌙 Evening  14:00–22:00', free: '✦ Free Day' };
+  const shiftHex = { early: '#e8c547', evening: '#7c6fcd', free: '#4ade80' };
+
+  // Helper: parse "HH:MM" → minutes from midnight
+  const toMin = t => { if (!t) return null; const [h,m] = t.split(':').map(Number); return h*60+(m||0); };
+
+  // Timed events with midnight fix
+  const calcDuration = (startMin, endMin) => {
+    if (endMin === null) return 60;
+    if (endMin <= startMin) endMin += 24 * 60; // crosses midnight
+    return Math.max(endMin - startMin, 30);
+  };
+
+  const shiftExpanded = (window._shiftExpanded || {})[calSelectedDate] !== false; // default expanded
+
+  // ── Build hour rows ──
+  let rowsHtml = '';
+  for (let h = 0; h < 24; h++) {
+    const inShift = shiftRange && h >= shiftRange[0] && h < shiftRange[1];
+    const isShiftStart = shiftRange && h === shiftRange[0];
+    const isInnerShiftRow = inShift && !isShiftStart;
+    const shiftColor = shiftHex[shift] || '#888';
+
+    // Hide inner rows when collapsed (display:none keeps layout intact for absolute events)
+    const hideRow = isInnerShiftRow && !shiftExpanded;
+    const highlightRow = inShift && (shiftExpanded || isShiftStart);
+    const rowBg = highlightRow ? `background:${shiftColor}18;border-left:3px solid ${shiftColor}55;` : 'border-left:3px solid transparent;';
+    const hourColor = highlightRow ? `color:${shiftColor};` : '';
+    const displayStyle = hideRow ? 'display:none;' : '';
+
+    rowsHtml += `<div class="timeline-row" id="hour-${h}" style="${displayStyle}${rowBg}">
+      <div class="timeline-hour" style="${hourColor}">${String(h).padStart(2,'0')}:00</div>
+      <div class="timeline-slot" style="cursor:pointer" title="Click to add"></div>
+    </div>`;
+  }
+
+  // ── Build events layer (absolute, spans multiple rows) ──
+  // ── Build events layer (pointer-events:none — clicks pass through to rows) ──
+  let eventsHtml = `<div class="timeline-events-layer" style="height:${25 * ROW_H}px;pointer-events:none;z-index:2">`;
+
+  // Now-line
+  if (nowMinutes >= 0) {
+    const nowTop = (nowMinutes / 60) * ROW_H;
+    eventsHtml += `<div class="timeline-now-dot" style="top:${nowTop}px"></div>
+                   <div class="timeline-now-line" style="top:${nowTop}px"></div>`;
+  }
+
+  // Timed events (pointer-events:all re-enabled per event)
+  const timedEvents = events.filter(e => e.time);
+  timedEvents.forEach(e => {
+    const startMin = toMin(e.time);
+    const endMin   = toMin(e.timeEnd);
+    const duration = calcDuration(startMin, endMin);
+    const top      = (startMin / 60) * ROW_H;
+    const fullH    = (duration / 60) * ROW_H - 2;
+    const color    = e.color || CAT_COLORS[e.cat] || '#7c6fcd';
+
+    // Collapse blocks that span 2+ hours
+    const collapsible = duration >= 120;
+    const collapsedH  = ROW_H - 2; // one row tall when collapsed
+    const isExpanded  = (window._tlExpanded || {})[e.id];
+    const height      = collapsible && !isExpanded ? collapsedH : fullH;
+    const overflow    = collapsible && !isExpanded ? 'hidden' : 'visible';
+
+    const expandBtn = collapsible ? `
+      <button onclick="event.stopPropagation();tlToggle(${e.id})" style="background:none;border:none;color:${color};cursor:pointer;font-size:10px;padding:0 4px;line-height:1;flex-shrink:0;letter-spacing:0.5px;font-family:'Syne',sans-serif;font-weight:700">
+        ${isExpanded ? '▲' : '▼ ' + Math.round(duration/60) + 'h'}
+      </button>` : '';
+
+    eventsHtml += `
+      <div class="timeline-event" id="tle-${e.id}" style="top:${top}px;height:${height}px;overflow:${overflow};border-left-color:${color};background:${color}22;display:flex;align-items:flex-start;justify-content:space-between;gap:6px;transition:height 0.2s ease;pointer-events:all">
+        <div style="overflow:hidden;flex:1;min-width:0">
+          <div class="timeline-event-title">${e.title}</div>
+          <div class="timeline-event-meta">${e.time}${e.timeEnd ? ' → '+e.timeEnd : ''} · ${Math.round(duration/60)}h</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:4px;flex-shrink:0">
+          ${expandBtn}
+          <button onclick="event.stopPropagation();deleteEvent(${e.id})" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:13px;padding:0;line-height:1" title="Remove">✕</button>
+        </div>
+      </div>`;
+  });
+
+  // All-day events (no time) — shown as a slim bar at the very top
+  const allDayEvents = events.filter(e => !e.time);
+  allDayEvents.forEach((e, i) => {
+    const color = e.color || CAT_COLORS[e.cat] || '#7c6fcd';
+    eventsHtml += `
+      <div class="timeline-event" style="top:${i * 26}px;height:22px;left:8px;right:4px;border-left-color:${color};background:${color}22;display:flex;align-items:center;justify-content:space-between;gap:6px;padding:2px 8px;pointer-events:all">
+        <div class="timeline-event-title" style="font-size:11px">${e.title} <span style="font-weight:400;color:var(--text3)">all day</span></div>
+        <button onclick="deleteEvent(${e.id})" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:13px;padding:0;line-height:1;flex-shrink:0">✕</button>
+      </div>`;
+  });
+
+  eventsHtml += '</div>';
+
+  // ── Shift overlay — separate layer with pointer-events so buttons work ──
+  let shiftHtml = '';
+  if (shiftRange) {
+    const shiftColor = shiftHex[shift] || '#888';
+    const shiftTop   = shiftRange[0] * ROW_H;
+    const shiftFullH = (shiftRange[1] - shiftRange[0]) * ROW_H - 2;
+    const shiftCollH = ROW_H - 2;
+    const shiftH     = shiftExpanded ? shiftFullH : shiftCollH;
+    shiftHtml = `
+      <div data-shift-block style="position:absolute;top:${shiftTop}px;height:${shiftH}px;left:54px;right:4px;z-index:3;
+        border-left:3px solid ${shiftColor};background:${shiftColor}18;border-radius:0 6px 6px 0;
+        padding:4px 10px;overflow:hidden;transition:height 0.2s ease;box-sizing:border-box">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:10px;color:${shiftColor};letter-spacing:1px;text-transform:uppercase;font-family:'Syne',sans-serif;font-weight:700">${shiftLabels[shift]}</span>
+          <button onclick="event.stopPropagation();tlToggleShift('${calSelectedDate}')"
+            style="background:none;border:none;color:${shiftColor};cursor:pointer;font-size:10px;padding:0;font-family:'Syne',sans-serif;font-weight:700;letter-spacing:0.5px">
+            ${shiftExpanded ? '▲' : '▼ 8h'}
+          </button>
+        </div>
+      </div>`;
+  }
+  if (shift === 'free') {
+    const fc = shiftHex.free;
+    shiftHtml += `<div style="position:absolute;top:${8*ROW_H+6}px;left:54px;z-index:3;pointer-events:none">
+      <span style="font-size:10px;color:${fc};letter-spacing:1px;text-transform:uppercase;font-family:'Syne',sans-serif;font-weight:700">${shiftLabels.free}</span>
+    </div>`;
+  }
+
+  // ── Wrap everything ──
+  container.innerHTML = `<div style="position:relative" id="tl-inner">
+    <div style="position:relative;z-index:1">${rowsHtml}</div>
+    ${eventsHtml}
+    ${shiftHtml}
+  </div>`;
+
+  // Click to add — walk actual rendered row heights to find which hour was clicked
+  document.getElementById('tl-inner').addEventListener('click', function(e) {
+    if (e.target.closest('button')) return;
+    if (e.target.closest('.timeline-event')) return;
+    if (e.target.closest('[data-shift-block]')) return;
+    const inner = document.getElementById('tl-inner');
+    const rect  = inner.getBoundingClientRect();
+    const y     = e.clientY - rect.top + container.scrollTop;
+
+    let cumY = 0;
+    let clickedHour = -1;
+    for (let h = 0; h < 24; h++) {
+      const row = document.getElementById('hour-' + h);
+      if (!row) continue;
+      const rh = row.offsetHeight;
+      if (rh === 0) continue; // collapsed row, skip
+      if (y >= cumY && y < cumY + rh) { clickedHour = h; break; }
+      cumY += rh;
+    }
+    if (clickedHour >= 0) openModal(clickedHour);
+  });
+
+  // Only auto-scroll on first load (savedScroll === 0), otherwise restore position
+  if (savedScroll > 0) {
+    container.scrollTop = savedScroll;
+  } else {
+    const scrollHour = isToday ? Math.max(0, now.getHours() - 1) : (shiftRange ? shiftRange[0] : 8);
+    const target = document.getElementById('hour-' + scrollHour);
+    if (target) setTimeout(() => container.scrollTop = target.offsetTop, 50);
+  }
+}
+
+function tlToggle(id) {
+  window._tlExpanded = window._tlExpanded || {};
+  window._tlExpanded[id] = !window._tlExpanded[id];
+  renderDayTimeline();
+}
+
+function tlToggleShift(dateStr) {
+  window._shiftExpanded = window._shiftExpanded || {};
+  // default is expanded (true), toggle to collapsed (false) and back
+  const current = window._shiftExpanded[dateStr] !== false;
+  window._shiftExpanded[dateStr] = !current;
+  renderDayTimeline();
+}
+
+function updateHomeAgenda() {
+  const today = todayKey();
+  const events = S.get('agenda_events', [])
+    .filter(e => e.date === today)
+    .sort((a, b) => (a.time || '99:99').localeCompare(b.time || '99:99'));
+  const el = document.getElementById('home-agenda-preview');
+  if (!el) return;
+  if (events.length === 0) { el.innerHTML = '<div style="color:var(--text3);font-size:12px">No events today.</div>'; return; }
+  el.innerHTML = events.map(e => `
+    <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
+      <div style="width:6px;height:6px;border-radius:50%;background:${CAT_COLORS[e.cat] || 'var(--accent)'}"></div>
+      <span style="font-family:'Syne',sans-serif;font-weight:700;font-size:13px">${e.title}</span>
+      ${e.time ? `<span style="font-size:11px;color:var(--text2);margin-left:auto">${e.time}</span>` : ''}
+    </div>`).join('');
+}
+
+// ============================================================
+// INIT
+// ============================================================
+function init() {
+  setGreeting();
+
+  // Set workout date default
+  document.getElementById('wo-date').value = todayKey();
+
+  // Load API key hint
+  if (S.get('claude_api_key')) {
+    document.getElementById('api-key-input').placeholder = 'API key saved ✓';
+  }
+
+  renderFinance();
+  // Set income input from saved value
+  const savedIncome = S.get('fin_income', 0);
+  if (savedIncome && document.getElementById('fin-income-input')) {
+    document.getElementById('fin-income-input').value = savedIncome;
+  }
+  updateNutrition();
+  renderHabits();
+  renderWorkouts();
+  renderTrainingSchema();
+  renderMealplan();
+  updateHome();
+
+  // Agenda
+  calRender();
+  renderAgendaDay();
+  renderAgendaUpcoming();
+  updateHomeAgenda();
+  renderShiftButtons();
+  renderTasks();
+  renderAddPanelHabits();
+  renderHabitManageList();
+}
+
+init();
+
+// PWA Service Worker
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('service-worker.js')
+      .then(() => console.log('SW registered'))
+      .catch(e => console.log('SW error:', e));
+  });
+}
+
+</script>
+</body>
+</html>
